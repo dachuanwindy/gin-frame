@@ -12,7 +12,7 @@ development
 *node*
 .DS_Store
 test/*
-test.*
-configs/es.ini
-configs/mysql.ini
-configs/redis.ini
+test.go
+es.ini
+mysql.ini
+redis.ini
