@@ -17,6 +17,7 @@ charset = utf8
 is_log = true
 
 # redis.ini example:
+```
 [default]
 host = 127.0.0.1
 port = 6379
@@ -25,8 +26,10 @@ auth =
 max_active = 600
 max_idle = 10
 is_log = true
+```
 
 # log.ini example:
+```
 [run]
 run_dir = ./logs/run/
 dir = ./logs/run/
@@ -52,10 +55,13 @@ turn = true
 
 [es_open]
 turn = true
+```
 
 # es.ini example:
+```
 [default]
 host = http://127.0.0.1
 port = 9200
+```
 
 
