@@ -4,6 +4,8 @@
 # run
 go run main.go 
 
+curl localhost:777/ping
+
 # mysql.ini example:
 [default]
 host = 127.0.0.1
