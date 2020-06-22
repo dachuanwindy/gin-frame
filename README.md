@@ -1,6 +1,9 @@
 # gin-frame
 基于go-gin开发的api框架，封装各种常用组件
 
+# run
+go run main.go 
+
 # mysql.ini example:
 [default]
 host = 127.0.0.1
