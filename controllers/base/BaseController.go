@@ -2,7 +2,6 @@ package base
 
 import (
 	"github.com/gin-gonic/gin"
-	"gin-frame/models/user"
 	"net/http"
 	"strconv"
 	"gin-frame/libraries/log"
@@ -63,19 +62,6 @@ func (self *BaseController) SetYmt() {
 	self.setCid()
 	self.setAppId()
 	self.setAppUid()
-
-	self.setUserAppInfo()
-}
-
-func (self *BaseController) setUserAppInfo() {
-	var userAppInfo = make(map[string]interface{})
-
-	res := user.GetInfoByAppUid(self.C, self.AppUid)
-	if len(res) != 0 {
-		userAppInfo = res
-	}
-
-	self.UserAppInfo = userAppInfo
 }
 
 func (self *BaseController) initResult(){

@@ -8,6 +8,7 @@ require (
 	github.com/go-sql-driver/mysql v1.5.0
 	github.com/gomodule/redigo v2.0.0+incompatible
 	github.com/google/go-cmp v0.5.0 // indirect
+	github.com/jinzhu/gorm v1.9.14
 	github.com/jmoiron/sqlx v1.2.0
 	github.com/larspensjo/config v0.0.0-20160228172812-b6db95dc6321
 	github.com/mailru/easyjson v0.7.1 // indirect

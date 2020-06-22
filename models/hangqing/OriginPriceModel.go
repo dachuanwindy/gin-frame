@@ -1,48 +1,60 @@
 package hangqing
 
 import (
-	"context"
-	"github.com/jmoiron/sqlx"
-	"gin-frame/libraries/util"
+	"gin-frame/libraries/mysql"
 	"gin-frame/models/base"
+	"github.com/jinzhu/gorm"
 )
 
 type OriginPrice struct {
-	Id 				int
-	Customer_id     int
-	Province_id     int
-	City_id      	int
-	County_id      	int
-	Location_id     int
-	Product_id		int
-	Breed_id		int
-	Point_key		string
-	Day_time		string
-	Price_list		string
-	Desc_list		string
-	Updated_time	string
+	//gorm.Model
+	Id           int `gorm:"primary_key"`
+	CustomerId   int
+	ProvinceId   int
+	CityId       int
+	CountyId     int
+	LocationId   int
+	ProductId    int
+	BreedId      int
+	PointKey     string
+	DayTime      string
+	PriceList    string
+	DescList     string
+	Status       int
+	CreatedTime  int
+	UpdatedTime  int
+	RefuseReason string
+	IsSync       int
 }
 
-func GetWithinThreeDaysOriginPriceByCustomerId(ctx context.Context, cid int) (data []map[string]interface{}) {
-	db := base.GetConn("hangqing")
+func (OriginPrice) TableName() string {
+	return "origin_price"
+}
 
-	dateTime := util.GetDaysAgoZeroTime(-3)
-	sql := "select id,customer_id, province_id,city_id,county_id,location_id,product_id,breed_id,point_key,day_time,price_list,desc_list,updated_time from origin_price " +
-		"where customer_id = ? and created_time >= ? order by updated_time desc"
-	rows, err := db.MasterDBQueryContext(ctx, sql, cid, dateTime)
-	util.Must(err)
+type OriginPriceModel struct {
+	Db          *mysql.DB
+}
 
-	var list = []*OriginPrice{}
-	err = sqlx.StructScan(rows, &list)
-	util.Must(err)
+var instance *OriginPriceModel
 
-	for _, v := range list {
-		tmp := util.StructToMap(*v)
-		data = append(data, tmp)
+func NewOriginPriceModel() *OriginPriceModel {
+	if instance == nil {
+		instance = &OriginPriceModel{}
+		instance.Db = base.GetInstance("hangqing")
 	}
-
-	return
+	return instance
 }
 
+func (instance *OriginPriceModel) GetFirst() []OriginPrice {
+	originPrices := []OriginPrice{}
+	orm := instance.Db.SlaveOrm()
+	dbRes := orm.First(&originPrices)
+	instance.checkRes(dbRes)
+	return originPrices
+}
 
-
+func (instance *OriginPriceModel) checkRes(dbRes *gorm.DB) {
+	if dbRes.Error != nil {
+		panic(dbRes.Error)
+	}
+}

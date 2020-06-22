@@ -18,7 +18,7 @@ func InitRouter(Port int, productName, moduleName string) *gin.Engine {
 	server := gin.New()
 
 	baseController 	 := &base.BaseController{}
-	chandiController := &price.PriceController{}
+	firstOriginPriceController := &price.FirstOriginPriceController{}
 
 	server.Use(gin.Recovery())
 	server.Use(trace.OpenTracing(productName))
@@ -37,9 +37,9 @@ func InitRouter(Port int, productName, moduleName string) *gin.Engine {
 		baseController.Ping()
 	})
 
-	group.POST("/hangqing_chandi/api/customer_origin_list", func(c *gin.Context) {
-		chandiController.Init(c, productName, moduleName)
-		chandiController.Do()
+	group.GET("/origin/first_origin_price", func(c *gin.Context) {
+		firstOriginPriceController.Init(c, productName, moduleName)
+		firstOriginPriceController.Do()
 	})
 	return server
 }
