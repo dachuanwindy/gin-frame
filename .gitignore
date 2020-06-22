@@ -13,6 +13,4 @@ development
 .DS_Store
 test/*
 test.go
-configs/es.ini
-configs/mysql.ini
-configs/redis.ini
+configs/*
