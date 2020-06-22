@@ -4,14 +4,15 @@ import (
 	"net/url"
 	"path"
 	"strings"
+	util_dir "gin-frame/libraries/util/dir"
 )
 
 //url的path转文件名
 func UriToFilePathByDate(uriPath string, dir string) string {
 	pathArr := strings.Split(uriPath, "/")
 	fileName := strings.Join(pathArr, "-")
-	writePath := CreateDateDir(dir, "") //根据时间检测是否存在目录，不存在创建
-	writePath = RightAddPathPos(writePath)
+	writePath := util_dir.CreateDateDir(dir, "") //根据时间检测是否存在目录，不存在创建
+	writePath = util_dir.RightAddPathPos(writePath)
 	fileName = path.Join(writePath, fileName[1:len(fileName)]+".log")
 	return fileName
 }

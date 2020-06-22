@@ -50,12 +50,32 @@ func CreateDir(folderPath string) {
 }
 
 //根据当前日期，不存在则创建目录
-func CreateDateDir(Path string, prex string) string {
+func CreateDateDir(path string, prex string) string {
 	folderName := time.Now().Format("20060102")
 	if prex != "" {
 		folderName = prex + folderName
 	}
-	folderPath := filepath.Join(Path, folderName)
+	folderPath := filepath.Join(path, folderName)
+	if _, err := os.Stat(folderPath); os.IsNotExist(err) {
+		// 必须分成两步：先创建文件夹、再修改权限
+		os.MkdirAll(folderPath, 0777) //0777也可以os.ModePerm
+		os.Chmod(folderPath, 0777)
+	}
+	return folderPath
+}
+
+func GetDateDir(path string) string {
+	return path + time.Now().Format("20660102")
+}
+
+//根据当前小时创建目录和日志文件
+func CreateHourLogFile(path string, prex string) string {
+	folderName := time.Now().Format("20060102")
+	if prex != "" {
+		folderName = prex + folderName
+	}
+	hourDir := time.Now().Format("2006010215")
+	folderPath := filepath.Join(path, folderName, hourDir)
 	if _, err := os.Stat(folderPath); os.IsNotExist(err) {
 		// 必须分成两步：先创建文件夹、再修改权限
 		os.MkdirAll(folderPath, 0777) //0777也可以os.ModePerm

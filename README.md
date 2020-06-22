@@ -15,6 +15,8 @@ port = 3306
 db = why
 charset = utf8
 is_log = true
+max_open = 8
+max_idle = 4
 
 # redis.ini example:
 ```

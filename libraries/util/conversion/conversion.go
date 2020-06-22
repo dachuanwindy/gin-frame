@@ -5,11 +5,12 @@ import (
 	"encoding/json"
 	"reflect"
 	"strings"
+	"gin-frame/libraries/util/error"
 )
 
 func MapToJson(data map[string]interface{}) string {
 	jsonStr, err := json.Marshal(data)
-	Must(err)
+	error.Must(err)
 	return string(jsonStr)
 }
 
@@ -20,7 +21,7 @@ func JsonToMapArray(data string) []map[string]interface{} {
 		return res
 	}
 	err := json.Unmarshal([]byte(data), &res)
-	Must(err)
+	error.Must(err)
 
 	return res
 }
@@ -32,7 +33,7 @@ func JsonToMap(data string) map[string]interface{} {
 		return res
 	}
 	err := json.Unmarshal([]byte(data), &res)
-	Must(err)
+	error.Must(err)
 	return res
 }
 

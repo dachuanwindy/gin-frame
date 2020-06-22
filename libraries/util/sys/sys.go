@@ -5,6 +5,7 @@ import (
 	"net"
 	"os"
 	"strings"
+	utli_err "gin-frame/libraries/util/error"
 )
 
 func ExternalIP() (string, error) {
@@ -48,7 +49,7 @@ func ExternalIP() (string, error) {
 func HostName() string {
 	hostNamePrefix := ""
 	host, err := os.Hostname()
-	Must(err)
+	utli_err.Must(err)
 	if err == nil {
 		parts := strings.SplitN(host, ".", 2)
 		if len(parts) > 0 {

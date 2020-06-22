@@ -6,7 +6,11 @@ import (
 	"io/ioutil"
 	"gin-frame/libraries/config"
 	"gin-frame/libraries/log"
-	"gin-frame/libraries/util"
+	"gin-frame/libraries/util/dir"
+	"gin-frame/libraries/util/conversion"
+	"gin-frame/libraries/util/url"
+	"gin-frame/libraries/util/random"
+	"gin-frame/libraries/util/sys"
 	"gin-frame/libraries/xhop"
 	"net/http"
 	"strconv"
@@ -53,10 +57,8 @@ func LoggerMiddleware(port int, productName, moduleName string) gin.HandlerFunc 
 		runLogDir := runLogConfig.Key("dir").String()
 		area, _ := runLogConfig.Key("area").Int()
 
-		util.CreateDir(runLogDir)
-
-		file := util.CreateDateDir(runLogDir, moduleName+".log."+util.HostName()+".")
-		file = file + "/" + strconv.Itoa(util.RandomN(area))
+		file := dir.CreateHourLogFile(runLogDir, moduleName+".log."+sys.HostName()+".")
+		file = file + "/" + strconv.Itoa(random.RandomN(area))
 
 		log.Init(&log.LogConfig{
 			File:           file,
@@ -116,9 +118,9 @@ func LoggerMiddleware(port int, productName, moduleName string) gin.HandlerFunc 
 
 		log.Info(dst, map[string]interface{}{
 			"requestHeader": c.Request.Header,
-			"requestBody":   util.JsonToMap(strReqBody),
-			"responseBody":  util.JsonToMap(responseBody),
-			"uriQuery":      util.ParseUriQueryToMap(c.Request.URL.RawQuery),
+			"requestBody":   conversion.JsonToMap(strReqBody),
+			"responseBody":  conversion.JsonToMap(responseBody),
+			"uriQuery":      url.ParseUriQueryToMap(c.Request.URL.RawQuery),
 		})
 	}
 }

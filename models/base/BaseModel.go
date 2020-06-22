@@ -1,10 +1,11 @@
 package base
 
 import (
+	"fmt"
+	"gopkg.in/ini.v1"
 	"gin-frame/libraries/config"
 	"gin-frame/libraries/mysql"
 	"gin-frame/libraries/util"
-	"gopkg.in/ini.v1"
 	util_err "gin-frame/libraries/util/error"
 )
 
@@ -24,24 +25,26 @@ func GetInstance(conn string) *mysql.DB {
 }
 
 func getConn(conn string) *mysql.DB {
-	write := getDSN(conn + "_write")
-	read := getDSN(conn + "_read")
+	write := conn + "_write"
+	read := conn + "_read"
+	writeDsn := getDSN(conn + "_write")
+	readDsn := getDSN(conn + "_read")
 
-	writeDSN := mysql.Conn{
-		DSN:     write,
-		MaxOpen: 5,
-		MaxIdle: 5,
+	writeObj := mysql.Conn{
+		DSN:     writeDsn,
+		MaxOpen: getMaxOpen(write),
+		MaxIdle: getMaxIdle(write),
 	}
 
-	readDSN := mysql.Conn{
-		DSN:     read,
-		MaxOpen: 5,
-		MaxIdle: 5,
+	readObj := mysql.Conn{
+		DSN:     readDsn,
+		MaxOpen: getMaxOpen(read),
+		MaxIdle: getMaxOpen(read),
 	}
 
 	cfg := &mysql.Config{
-		Master: writeDSN,
-		Slave:  readDSN,
+		Master: writeObj,
+		Slave:  readObj,
 	}
 
 	db, err := mysql.New(cfg)
@@ -52,6 +55,7 @@ func getConn(conn string) *mysql.DB {
 
 func getMaxOpen(conn string) int {
 	cfg := getCfg(conn)
+	fmt.Println(cfg)
 	masterNum, err := cfg.Key("max_open").Int()
 	util_err.Must(err)
 	return masterNum
@@ -72,7 +76,7 @@ func getDSN(conn string) string {
 
 func getCfg(conn string) *ini.Section {
 	if cfgs == nil {
-		 cfgs = make(map[string]*ini.Section, 30)
+		cfgs = make(map[string]*ini.Section, 30)
 	}
 	if cfgs[conn] == nil {
 		cfgs[conn] = config.GetConfig("mysql", conn)
