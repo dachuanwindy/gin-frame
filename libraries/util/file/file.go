@@ -1,6 +1,12 @@
 package file
 
-import "os"
+import (
+	"fmt"
+	"os"
+	"io"
+	"bufio"
+	util_err "gin-frame/libraries/util/error"
+)
 
 //使用io.WriteString()函数进行数据的写入，不存在则创建
 func WriteWithIo(filePath, content string) error {
@@ -23,4 +29,30 @@ func WriteWithIo(filePath, content string) error {
 	}
 
 	return nil
+}
+
+func ReadFile(dir string) map[int]string {
+	file, err := os.OpenFile(dir, os.O_RDWR, 0666)
+	util_err.Must(err)
+	defer file.Close()
+
+	/* stat, err := file.Stat()
+	util_err.Must(err)
+	size := stat.Size */
+
+	buf := bufio.NewReader(file)
+	res := make(map[int]string) 
+	i := 0
+	for {
+		line, _, err := buf.ReadLine()
+		context := string(line)
+		if err != nil {
+			if err == io.EOF {
+				break;
+			}
+		}
+		res[i] = context
+		i++
+	}
+	return res
 }
