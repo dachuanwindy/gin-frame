@@ -1,18 +1,17 @@
 package routers
 
 import (
-	"github.com/gin-gonic/gin"
+	"gin-frame/controllers/base"
+	"gin-frame/controllers/price"
 	"gin-frame/libraries/config"
 	"gin-frame/libraries/util"
 	"gin-frame/middlewares/log"
-	"gin-frame/middlewares/trace"
 	"gin-frame/middlewares/panic"
-	"gin-frame/controllers/base"
-	"gin-frame/controllers/price"
-
+	"gin-frame/middlewares/trace"
+	"github.com/gin-gonic/gin"
 )
 
-func InitRouter(port int, productName, moduleName,env string) *gin.Engine {
+func InitRouter(port int, productName, moduleName, env string) *gin.Engine {
 	server := gin.New()
 
 	server.Use(gin.Recovery())
@@ -40,7 +39,7 @@ func InitRouter(port int, productName, moduleName,env string) *gin.Engine {
 	server.Use(panic.ThrowPanic(port, logFields, errorLogDir, errorLogArea, productName, moduleName, env))
 	//server.Use(dump.BodyDump())
 
-	baseController 	 := &base.BaseController{}
+	baseController := &base.BaseController{}
 	firstOriginPriceController := &price.FirstOriginPriceController{}
 
 	group := server.Group("")

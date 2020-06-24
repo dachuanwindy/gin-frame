@@ -442,5 +442,3 @@ func HostName() string {
 	}
 	return hostNamePrefix
 }
-
-

@@ -5,24 +5,25 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"gin-frame/libraries/config"
+	"gin-frame/libraries/log"
+	"gin-frame/libraries/util"
 	"github.com/olivere/elastic"
 	"github.com/opentracing/opentracing-go"
 	"github.com/pkg/errors"
 	"io/ioutil"
 	"net/http"
 	"time"
-	"gin-frame/libraries/config"
-	"gin-frame/libraries/log"
-	"gin-frame/libraries/util"
 )
 
 type Elastic struct {
 	Client *elastic.Client
 	host   string
 }
+
 /*
 es 缓存池
- */
+*/
 var (
 	ElasticPool = make(map[string]*Elastic)
 )
@@ -51,15 +52,16 @@ func InitES(name string) *Elastic {
 	fmt.Printf("Elasticsearch version %s\n", esVersion)
 	es := &Elastic{
 		Client: client,
-		host: host,
+		host:   host,
 	}
 	ElasticPool[name] = es
 	return es
 }
+
 /*
 新建索引
- */
-func (self *Elastic)CreateIndex(index, mapping string, logHeader *log.LogFormat) bool {
+*/
+func (self *Elastic) CreateIndex(index, mapping string, logHeader *log.LogFormat) bool {
 	// 判断索引是否存在
 	exists, err := self.Client.IndexExists(index).Do(context.Background())
 	if err != nil {
@@ -82,10 +84,11 @@ func (self *Elastic)CreateIndex(index, mapping string, logHeader *log.LogFormat)
 	}
 	return true
 }
+
 /*
 删除索引
- */
-func (self *Elastic)DelIndex(index string, logHeader *log.LogFormat) bool {
+*/
+func (self *Elastic) DelIndex(index string, logHeader *log.LogFormat) bool {
 	// Delete an index.
 	deleteIndex, err := self.Client.DeleteIndex(index).Do(context.Background())
 	if err != nil {
@@ -100,10 +103,11 @@ func (self *Elastic)DelIndex(index string, logHeader *log.LogFormat) bool {
 	}
 	return true
 }
+
 /*
 数据存储
- */
-func (self *Elastic)Put(index, typ, id, bodyJson string, logHeader *log.LogFormat) bool {
+*/
+func (self *Elastic) Put(index, typ, id, bodyJson string, logHeader *log.LogFormat) bool {
 	put, err := self.Client.Index().
 		Index(index).
 		Type(typ).
@@ -118,10 +122,11 @@ func (self *Elastic)Put(index, typ, id, bodyJson string, logHeader *log.LogForma
 	log.Infof(logHeader, "<Put> success, id: %s to index: %s, type %s\n", put.Id, put.Index, put.Type)
 	return true
 }
+
 /*
 数据删除
 */
-func (self *Elastic)Del(index, typ, id string, logHeader *log.LogFormat) bool {
+func (self *Elastic) Del(index, typ, id string, logHeader *log.LogFormat) bool {
 	del, err := self.Client.Delete().
 		Index(index).
 		Type(typ).
@@ -135,10 +140,11 @@ func (self *Elastic)Del(index, typ, id string, logHeader *log.LogFormat) bool {
 	log.Infof(logHeader, "<Del> success, id: %s to index: %s, type %s\n", del.Id, del.Index, del.Type)
 	return true
 }
+
 /*
 更新数据
- */
-func (self *Elastic)Update(index, typ, id string, updateMap map[string]interface{}, logHeader *log.LogFormat) bool {
+*/
+func (self *Elastic) Update(index, typ, id string, updateMap map[string]interface{}, logHeader *log.LogFormat) bool {
 	res, err := self.Client.Update().
 		Index(index).Type(typ).Id(id).
 		Doc(updateMap).
@@ -161,14 +167,14 @@ func (self *Elastic)Update(index, typ, id string, updateMap map[string]interface
 	return true
 }
 
-func (self *Elastic)TermQueryMap(index, typ string, term *elastic.TermQuery, start, end int, logHeader *log.LogFormat) map[string]interface{} {
+func (self *Elastic) TermQueryMap(index, typ string, term *elastic.TermQuery, start, end int, logHeader *log.LogFormat) map[string]interface{} {
 	//elastic.NewTermQuery()
 	searchResult, err := self.Client.Search().
 		Index(index).
 		Type(typ).
-		Query(term).        // specify the query
-		From(start).Size(end).        // take documents start-end
-		Pretty(true).            // pretty print request and response JSON
+		Query(term).                   // specify the query
+		From(start).Size(end).         // take documents start-end
+		Pretty(true).                  // pretty print request and response JSON
 		DoString(context.Background()) // execute
 	if err != nil {
 		fmt.Println(err.Error())
@@ -179,13 +185,13 @@ func (self *Elastic)TermQueryMap(index, typ string, term *elastic.TermQuery, sta
 	return util.JsonToMap(searchResult)
 }
 
-func (self *Elastic)TermQuery(index, typ string, term *elastic.TermQuery, start, end int, logHeader *log.LogFormat) *elastic.SearchResult {
+func (self *Elastic) TermQuery(index, typ string, term *elastic.TermQuery, start, end int, logHeader *log.LogFormat) *elastic.SearchResult {
 	//elastic.NewTermQuery()
 	searchResult, err := self.Client.Search().
 		Index(index).
 		Type(typ).
-		Query(term).        // specify the query
-		From(start).Size(end).        // take documents start-end
+		Query(term).             // specify the query
+		From(start).Size(end).   // take documents start-end
 		Pretty(true).            // pretty print request and response JSON
 		Do(context.Background()) // execute
 	if err != nil {
@@ -197,12 +203,12 @@ func (self *Elastic)TermQuery(index, typ string, term *elastic.TermQuery, start,
 	return searchResult
 }
 
-func (self *Elastic)QueryStringMap(index, typ, query string, start,end int, header *log.LogFormat) map[string]interface{} {
+func (self *Elastic) QueryStringMap(index, typ, query string, start, end int, header *log.LogFormat) map[string]interface{} {
 	q := elastic.NewQueryStringQuery(query)
 	// Match all should return all documents
 	searchResult, err := self.Client.Search().
 		Index(index).
-		Type(typ).    // type of Index
+		Type(typ). // type of Index
 		Query(q).
 		Pretty(true).
 		From(start).Size(end).
@@ -217,13 +223,13 @@ func (self *Elastic)QueryStringMap(index, typ, query string, start,end int, head
 }
 
 // https://www.elastic.co/guide/en/elasticsearch/reference/6.8/query-dsl-query-string-query.html
-func (self *Elastic)QueryString(index, typ, query string, size int, header *log.LogFormat) *elastic.SearchResult {
+func (self *Elastic) QueryString(index, typ, query string, size int, header *log.LogFormat) *elastic.SearchResult {
 
 	q := elastic.NewQueryStringQuery(query)
 	// Match all should return all documents
 	searchResult, err := self.Client.Search().
 		Index(index).
-		Type(typ).    // type of Index
+		Type(typ). // type of Index
 		Query(q).
 		Pretty(true).
 		From(0).Size(size).
@@ -239,8 +245,8 @@ func (self *Elastic)QueryString(index, typ, query string, size int, header *log.
 
 /*
 多条件参考：https://stackoverflow.com/questions/49942373/golang-elasticsearch-multiple-query-parameters
- */
-func (self *Elastic)MultiMatchQueryBestFields(index, typ, text string, start,end int,logHeader *log.LogFormat,fields ...string) *elastic.SearchResult {
+*/
+func (self *Elastic) MultiMatchQueryBestFields(index, typ, text string, start, end int, logHeader *log.LogFormat, fields ...string) *elastic.SearchResult {
 	q := elastic.NewMultiMatchQuery(text, fields...)
 	searchResult, err := self.Client.Search().
 		Index(index). // name of Index
@@ -257,7 +263,7 @@ func (self *Elastic)MultiMatchQueryBestFields(index, typ, text string, start,end
 	return searchResult
 }
 
-func (self *Elastic)MultiMatchQueryBestFieldsMap(index, typ, text string, start,end int,logHeader *log.LogFormat,fields ...string) map[string]interface{} {
+func (self *Elastic) MultiMatchQueryBestFieldsMap(index, typ, text string, start, end int, logHeader *log.LogFormat, fields ...string) map[string]interface{} {
 	q := elastic.NewMultiMatchQuery(text, fields...)
 	searchResult, err := self.Client.Search().
 		Index(index). // name of Index
@@ -274,7 +280,7 @@ func (self *Elastic)MultiMatchQueryBestFieldsMap(index, typ, text string, start,
 	return util.JsonToMap(searchResult)
 }
 
-func (self *Elastic)QueryStringRandomSearch(client *elastic.Client, index, typ, query string, size int, header *log.LogFormat) *elastic.SearchResult {
+func (self *Elastic) QueryStringRandomSearch(client *elastic.Client, index, typ, query string, size int, header *log.LogFormat) *elastic.SearchResult {
 	q := elastic.NewFunctionScoreQuery()
 	queryString := elastic.NewQueryStringQuery(query)
 	q = q.Query(queryString)
@@ -293,7 +299,7 @@ func (self *Elastic)QueryStringRandomSearch(client *elastic.Client, index, typ, 
 	return searchResult
 }
 
-func (self *Elastic)RangeQueryLoginDate(index string, typ string, start,end int, logHeader *log.LogFormat) *elastic.SearchResult {
+func (self *Elastic) RangeQueryLoginDate(index string, typ string, start, end int, logHeader *log.LogFormat) *elastic.SearchResult {
 	q := elastic.NewRangeQuery("latest_time").
 		Gte("now-30d/d")
 	searchResult, err := self.Client.Search().
@@ -310,14 +316,14 @@ func (self *Elastic)RangeQueryLoginDate(index string, typ string, start,end int,
 	return searchResult
 }
 
-func (self *Elastic)JsonMap(index,typ,query string, fields []string, from, size int,
-	terms map[string]interface{}, mustNot, filter,sort []map[string]interface{}, logHeader *log.LogFormat) map[string]interface{}{
+func (self *Elastic) JsonMap(index, typ, query string, fields []string, from, size int,
+	terms map[string]interface{}, mustNot, filter, sort []map[string]interface{}, logHeader *log.LogFormat) map[string]interface{} {
 	data := make(map[string]interface{})
 
 	var must []map[string]interface{}
 	if len(terms) != 0 {
 		must = append(must, map[string]interface{}{
-			"terms":terms,
+			"terms": terms,
 		})
 	}
 	if query != "" {
@@ -327,7 +333,7 @@ func (self *Elastic)JsonMap(index,typ,query string, fields []string, from, size 
 			multiMatch["fields"] = fields
 		}
 		must = append(must, map[string]interface{}{
-			"multi_match":multiMatch,
+			"multi_match": multiMatch,
 		})
 	}
 	data["from"] = from
@@ -335,9 +341,9 @@ func (self *Elastic)JsonMap(index,typ,query string, fields []string, from, size 
 	data["sort"] = sort
 	data["query"] = map[string]interface{}{
 		"bool": map[string]interface{}{
-			"must": must,
-			"must_not":mustNot,
-			"filter":filter,
+			"must":     must,
+			"must_not": mustNot,
+			"filter":   filter,
 		},
 	}
 
@@ -362,7 +368,7 @@ func (self *Elastic)JsonMap(index,typ,query string, fields []string, from, size 
 	ret := util.JsonToMap(string(b))
 	if ret["error"] != nil {
 		fmt.Println(fmt.Sprintf("%s", string(b)))
-		log.Errorf(logHeader, fmt.Sprintf("%s", string(b)) )
+		log.Errorf(logHeader, fmt.Sprintf("%s", string(b)))
 		panic("es error")
 		return nil
 	}
@@ -370,28 +376,28 @@ func (self *Elastic)JsonMap(index,typ,query string, fields []string, from, size 
 	return ret
 }
 
-func (self *Elastic)JsonMapHttp(index,typ,query string, fields []string, from, size int,
-	terms map[string]interface{}, mustNot, filter,sort []map[string]interface{}, logHeader *log.LogFormat, ctx context.Context) map[string]interface{}{
+func (self *Elastic) JsonMapHttp(index, typ, query string, fields []string, from, size int,
+	terms map[string]interface{}, mustNot, filter, sort []map[string]interface{}, logHeader *log.LogFormat, ctx context.Context) map[string]interface{} {
 
 	var (
 		parent        = opentracing.SpanFromContext(ctx)
 		operationName = "es_search"
-		statement 	  = fmt.Sprintf("esUri:%s, index:%s, type:%s, query:%s",
+		statement     = fmt.Sprintf("esUri:%s, index:%s, type:%s, query:%s",
 			self.host, index, typ, query)
-		span          = func() opentracing.Span {
+		span = func() opentracing.Span {
 			if parent == nil {
 				return opentracing.StartSpan(operationName)
 			}
 			return opentracing.StartSpan(operationName, opentracing.ChildOf(parent.Context()))
 		}()
-		logFormat  = log.LogHeaderFromContext(ctx)
-		startAt    = time.Now()
-		endAt      time.Time
+		logFormat = log.LogHeaderFromContext(ctx)
+		startAt   = time.Now()
+		endAt     time.Time
 	)
 	var err error
 
 	lastModule := logFormat.Module
-	defer func() {logFormat.Module = lastModule}()
+	defer func() { logFormat.Module = lastModule }()
 
 	defer span.Finish()
 	defer func() {
@@ -399,7 +405,7 @@ func (self *Elastic)JsonMapHttp(index,typ,query string, fields []string, from, s
 
 		logFormat.StartTime = startAt
 		logFormat.EndTime = endAt
-		latencyTime := logFormat.EndTime.Sub(logFormat.StartTime).Microseconds()// 执行时间
+		latencyTime := logFormat.EndTime.Sub(logFormat.StartTime).Microseconds() // 执行时间
 		logFormat.LatencyTime = latencyTime
 
 		span.SetTag("error", err != nil)
@@ -408,7 +414,7 @@ func (self *Elastic)JsonMapHttp(index,typ,query string, fields []string, from, s
 
 		if err != nil {
 			log.Errorf(logFormat, "%s:[%s], error: %s", operationName, statement, err)
-		}else {
+		} else {
 			log.Warnf(logFormat, statement)
 		}
 
@@ -431,7 +437,7 @@ func (self *Elastic)JsonMapHttp(index,typ,query string, fields []string, from, s
 	var must []map[string]interface{}
 	if len(terms) != 0 {
 		must = append(must, map[string]interface{}{
-			"terms":terms,
+			"terms": terms,
 		})
 	}
 	if query != "" {
@@ -441,7 +447,7 @@ func (self *Elastic)JsonMapHttp(index,typ,query string, fields []string, from, s
 			multiMatch["fields"] = fields
 		}
 		must = append(must, map[string]interface{}{
-			"multi_match":multiMatch,
+			"multi_match": multiMatch,
 		})
 	}
 	data["from"] = from
@@ -449,9 +455,9 @@ func (self *Elastic)JsonMapHttp(index,typ,query string, fields []string, from, s
 	data["sort"] = sort
 	data["query"] = map[string]interface{}{
 		"bool": map[string]interface{}{
-			"must": must,
-			"must_not":mustNot,
-			"filter":filter,
+			"must":     must,
+			"must_not": mustNot,
+			"filter":   filter,
 		},
 	}
 
@@ -476,7 +482,7 @@ func (self *Elastic)JsonMapHttp(index,typ,query string, fields []string, from, s
 	ret := util.JsonToMap(string(b))
 	if ret["error"] != nil {
 		err = errors.New(fmt.Sprintf("%s", string(b)))
-		log.Errorf(logHeader, fmt.Sprintf("%s", string(b)) )
+		log.Errorf(logHeader, fmt.Sprintf("%s", string(b)))
 		return nil
 	}
 

@@ -1,10 +1,10 @@
 package url
 
 import (
+	util_dir "gin-frame/libraries/util/dir"
 	"net/url"
 	"path"
 	"strings"
-	util_dir "gin-frame/libraries/util/dir"
 )
 
 //url的path转文件名

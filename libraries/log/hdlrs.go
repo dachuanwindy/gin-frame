@@ -34,7 +34,7 @@ var (
 
 type StreamHandler struct {
 	formatter  Formatter
-	logChan    chan *LogFormat    //消息处理队列
+	logChan    chan *LogFormat //消息处理队列
 	logBufChan chan []byte     //buf消息处理队列
 	sigChan    chan *LogSignal //信号处理队列
 	sigCb      map[int][]func(*LogSignal) error
@@ -287,7 +287,6 @@ func NewFileHandler(c *LogConfig) *FileHandler {
 		},
 		StreamHandler: NewStreamHandler(),
 	}
-
 
 	//setup formatter
 	fh.setupFormatter(c.Mode)

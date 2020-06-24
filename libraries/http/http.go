@@ -4,26 +4,26 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"gin-frame/libraries/log"
+	"gin-frame/libraries/util"
 	"github.com/opentracing/opentracing-go"
 	"io/ioutil"
 	"net/http"
 	"strconv"
 	"time"
-	"gin-frame/libraries/log"
-	"gin-frame/libraries/util"
 )
 
-func HttpSend(ctx context.Context, method,url string, data map[string]interface{}) (map[string]interface{}){
+func HttpSend(ctx context.Context, method, url string, data map[string]interface{}) map[string]interface{} {
 	var (
-		statement  = url
-		parent     = opentracing.SpanFromContext(ctx)
-		span       opentracing.Span
-		startAt    = time.Now()
-		endAt      time.Time
-		logFormat  = log.LogHeaderFromContext(ctx)
-		err		   error
-		ret 	   = make(map[string]interface{})
-		req		   *http.Request
+		statement = url
+		parent    = opentracing.SpanFromContext(ctx)
+		span      opentracing.Span
+		startAt   = time.Now()
+		endAt     time.Time
+		logFormat = log.LogHeaderFromContext(ctx)
+		err       error
+		ret       = make(map[string]interface{})
+		req       *http.Request
 	)
 
 	if logFormat == nil {
@@ -42,7 +42,7 @@ func HttpSend(ctx context.Context, method,url string, data map[string]interface{
 		endAt = time.Now()
 		logFormat.StartTime = startAt
 		logFormat.EndTime = endAt
-		latencyTime := logFormat.EndTime.Sub(logFormat.StartTime).Microseconds()// 执行时间
+		latencyTime := logFormat.EndTime.Sub(logFormat.StartTime).Microseconds() // 执行时间
 		logFormat.LatencyTime = latencyTime
 		logFormat.XHop = log.NextXhop(req.Header)
 

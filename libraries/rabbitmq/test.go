@@ -4,7 +4,7 @@ import (
 	"gin-frame/libraries/util"
 )
 
-func consumer(){
+func consumer() {
 	connUri := "amqp://why:why@localhost:5672/why"
 	queueName := "why_queue"
 
@@ -14,7 +14,7 @@ func consumer(){
 	defer c.Shutdown()
 }
 
-func producer(){
+func producer() {
 	connUri := "amqp://why:why@localhost:5672/why"
 	queueName := "why_queue"
 	exchangeName := "why_exchange"
@@ -24,7 +24,7 @@ func producer(){
 	util.Must(err)
 }
 
-func main(){
+func main() {
 	producer()
 	consumer()
 }

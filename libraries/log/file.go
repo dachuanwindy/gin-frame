@@ -20,7 +20,7 @@ func (f *LogFile) FilePath() string {
 
 //open for write only
 func (f *LogFile) OpenFile() error {
-	if file,err := os.OpenFile(f.file, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0777); err != nil {
+	if file, err := os.OpenFile(f.file, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0777); err != nil {
 		return err
 	} else {
 		f.logFile = file

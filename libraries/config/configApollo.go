@@ -2,10 +2,10 @@ package config
 
 import (
 	"fmt"
+	env "gin-frame/libraries/config/env"
 	util_err "gin-frame/libraries/util/error"
 	"github.com/astaxie/beego/config"
 	agollo "github.com/zouyx/agollo/v3"
-	env "gin-frame/libraries/config/env"
 )
 
 var AppConfig config.Configer

@@ -1,11 +1,11 @@
 package file
 
 import (
-	"fmt"
-	"os"
-	"io"
 	"bufio"
+	"fmt"
 	util_err "gin-frame/libraries/util/error"
+	"io"
+	"os"
 )
 
 //使用io.WriteString()函数进行数据的写入，不存在则创建
@@ -41,14 +41,14 @@ func ReadFile(dir string) map[int]string {
 	size := stat.Size */
 
 	buf := bufio.NewReader(file)
-	res := make(map[int]string) 
+	res := make(map[int]string)
 	i := 0
 	for {
 		line, _, err := buf.ReadLine()
 		context := string(line)
 		if err != nil {
 			if err == io.EOF {
-				break;
+				break
 			}
 		}
 		res[i] = context

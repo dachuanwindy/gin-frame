@@ -3,21 +3,20 @@ package config
 import (
 	"flag"
 	"fmt"
+	"gin-frame/libraries/util"
 	"github.com/larspensjo/config"
 	"gopkg.in/ini.v1"
 	"runtime"
-	"gin-frame/libraries/util"
 )
 
 type Config struct {
-	Result	map[string]string
-	Err		string
+	Result map[string]string
+	Err    string
 }
 
 const path = "./configs/"
 
-
-func GetConfig(cfgType string, cfgSection string) *ini.Section{
+func GetConfig(cfgType string, cfgSection string) *ini.Section {
 	configFile := fmt.Sprintf("%s%s.ini", path, cfgType)
 
 	cfgIni, err := ini.Load(configFile)
@@ -27,11 +26,11 @@ func GetConfig(cfgType string, cfgSection string) *ini.Section{
 	return section
 }
 
-func (self *Config) getConfig(conn string, configFile string){
+func (self *Config) getConfig(conn string, configFile string) {
 	runtime.GOMAXPROCS(runtime.NumCPU())
 	flag.Parse()
 
-	cfg, err := config.ReadDefault(configFile)   //读取配置文件，并返回其Config
+	cfg, err := config.ReadDefault(configFile) //读取配置文件，并返回其Config
 
 	if err != nil {
 		logMsg := fmt.Sprintf("Fail to find %v,%v", configFile, err)
@@ -39,11 +38,11 @@ func (self *Config) getConfig(conn string, configFile string){
 	}
 
 	self.Result = map[string]string{}
-	if	cfg.HasSection(conn) {   //判断配置文件中是否有section（一级标签）
-		options, err := cfg.SectionOptions(conn)    //获取一级标签的所有子标签options（只有标签没有值）
+	if cfg.HasSection(conn) { //判断配置文件中是否有section（一级标签）
+		options, err := cfg.SectionOptions(conn) //获取一级标签的所有子标签options（只有标签没有值）
 		if err == nil {
-			for _,v := range options{
-				optionValue, err := cfg.String(conn, v)  //根据一级标签section和option获取对应的值
+			for _, v := range options {
+				optionValue, err := cfg.String(conn, v) //根据一级标签section和option获取对应的值
 				if err == nil {
 					self.Result[v] = optionValue
 				}
@@ -54,7 +53,7 @@ func (self *Config) getConfig(conn string, configFile string){
 
 func GetConfigEntrance(cfgType string, cfgSection string) map[string]string {
 	cfg := new(Config)
-	cfg.getConfig(cfgSection, path + cfgType + ".ini")
+	cfg.getConfig(cfgSection, path+cfgType+".ini")
 
 	return cfg.Result
 }

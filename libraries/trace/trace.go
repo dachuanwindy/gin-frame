@@ -2,10 +2,10 @@ package trace
 
 import (
 	"context"
+	"gin-frame/libraries/log"
 	"net/http"
 	"net/url"
 	"time"
-	"gin-frame/libraries/log"
 
 	"github.com/gin-gonic/gin"
 	opentracing "github.com/opentracing/opentracing-go"

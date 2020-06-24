@@ -3,13 +3,13 @@ package redis
 import (
 	"context"
 	"fmt"
-	"github.com/opentracing/opentracing-go"
-	"strings"
-	"time"
 	"gin-frame/libraries/config"
 	"gin-frame/libraries/log"
 	"gin-frame/libraries/util"
 	"gin-frame/libraries/xhop"
+	"github.com/opentracing/opentracing-go"
+	"strings"
+	"time"
 
 	"github.com/gomodule/redigo/redis"
 )
@@ -34,21 +34,21 @@ func Conn(conn string) (db *RedisDB, err error) {
 
 	portCfg, err := fileCfg.Key("port").Int()
 	dbCfg, err := fileCfg.Key("db").Int()
-	maxActiveCfg, err := fileCfg.Key("max_active").Int();
-	maxIdleCfg, err := fileCfg.Key("max_idle").Int();
+	maxActiveCfg, err := fileCfg.Key("max_active").Int()
+	maxIdleCfg, err := fileCfg.Key("max_idle").Int()
 	logCfg, err := fileCfg.Key("is_log").Bool()
 	util.Must(err)
 
 	cfg := &Config{
-		Host:       fileCfg.Key("host").String(),
-		Port:      	portCfg,
-		Password:   fileCfg.Key("auth").String(),
-		DB:         dbCfg,
-		MaxActive:  maxActiveCfg,
-		MaxIdle:    maxIdleCfg,
-		IsLog:		logCfg,
+		Host:      fileCfg.Key("host").String(),
+		Port:      portCfg,
+		Password:  fileCfg.Key("auth").String(),
+		DB:        dbCfg,
+		MaxActive: maxActiveCfg,
+		MaxIdle:   maxIdleCfg,
+		IsLog:     logCfg,
 	}
-		
+
 	db = new(RedisDB)
 	db.Config = cfg
 	db.pool = &redis.Pool{
@@ -67,10 +67,10 @@ func Conn(conn string) (db *RedisDB, err error) {
 			_, err := c.Do("PING")
 			return err
 		},
-		MaxIdle:     cfg.MaxIdle, // 最大的空闲连接数，表示即使没有redis连接时依然可以保持N个空闲的连接，而不被清除，随时处于待命状态
-		MaxActive:   cfg.MaxActive,  // 最大的激活连接数，表示同时最多有N个连接 ，为0事表示没有限制
-		IdleTimeout: time.Second, //最大的空闲连接等待时间，超过此时间后，空闲连接将被关闭
-		Wait:        true, // 当链接数达到最大后是否阻塞，如果不的话，达到最大后返回错误
+		MaxIdle:     cfg.MaxIdle,   // 最大的空闲连接数，表示即使没有redis连接时依然可以保持N个空闲的连接，而不被清除，随时处于待命状态
+		MaxActive:   cfg.MaxActive, // 最大的激活连接数，表示同时最多有N个连接 ，为0事表示没有限制
+		IdleTimeout: time.Second,   //最大的空闲连接等待时间，超过此时间后，空闲连接将被关闭
+		Wait:        true,          // 当链接数达到最大后是否阻塞，如果不的话，达到最大后返回错误
 	}
 
 	if _, err = db.Do(context.TODO(), "PING"); err != nil {
@@ -108,13 +108,13 @@ func (db *RedisDB) Do(ctx context.Context, commandName string, args ...interface
 		return
 	}
 	var (
-		conn       = db.pool.Get()
-		parent     = opentracing.SpanFromContext(ctx)
-		span       opentracing.Span
-		startAt    = time.Now()
-		endAt      time.Time
-		logFormat  = log.LogHeaderFromContext(ctx)
-		argsStr    []string
+		conn      = db.pool.Get()
+		parent    = opentracing.SpanFromContext(ctx)
+		span      opentracing.Span
+		startAt   = time.Now()
+		endAt     time.Time
+		logFormat = log.LogHeaderFromContext(ctx)
+		argsStr   []string
 	)
 	defer conn.Close()
 
@@ -143,7 +143,7 @@ func (db *RedisDB) Do(ctx context.Context, commandName string, args ...interface
 		endAt = time.Now()
 		logFormat.StartTime = startAt
 		logFormat.EndTime = endAt
-		latencyTime := logFormat.EndTime.Sub(logFormat.StartTime).Microseconds()// 执行时间
+		latencyTime := logFormat.EndTime.Sub(logFormat.StartTime).Microseconds() // 执行时间
 		logFormat.LatencyTime = latencyTime
 		logFormat.XHop = xhop.NewXhopNull()
 
@@ -153,7 +153,7 @@ func (db *RedisDB) Do(ctx context.Context, commandName string, args ...interface
 			log.Errorf(logFormat, "redis do:[%s], error: %s",
 				fmt.Sprint(commandName, " ", strings.Join(argsStr, " ")),
 				err)
-		}else if db.Config.IsLog == true {
+		} else if db.Config.IsLog == true {
 			log.Infof(logFormat, "redis do:[%s], used: %d milliseconds",
 				fmt.Sprint(commandName, " ", strings.Join(argsStr, " ")),
 				endAt.Sub(startAt).Milliseconds())
@@ -172,5 +172,3 @@ func (db *RedisDB) Do(ctx context.Context, commandName string, args ...interface
 	span.SetTag("error", err != nil)
 	return
 }
-
-

@@ -2,18 +2,18 @@ package log
 
 import (
 	"bytes"
+	"gin-frame/libraries/log"
+	"gin-frame/libraries/util/conversion"
+	"gin-frame/libraries/util/dir"
+	"gin-frame/libraries/util/random"
+	"gin-frame/libraries/util/sys"
+	"gin-frame/libraries/util/url"
+	"gin-frame/libraries/xhop"
+	"github.com/gin-gonic/gin"
 	"io/ioutil"
 	"net/http"
 	"strconv"
 	"time"
-	"github.com/gin-gonic/gin"
-	"gin-frame/libraries/log"
-	"gin-frame/libraries/util/dir"
-	"gin-frame/libraries/util/conversion"
-	"gin-frame/libraries/util/url"
-	"gin-frame/libraries/util/random"
-	"gin-frame/libraries/util/sys"
-	"gin-frame/libraries/xhop"
 )
 
 //定义新的struck，继承gin的ResponseWriter
@@ -30,7 +30,7 @@ func (w bodyLogWriter) Write(b []byte) (int, error) {
 	return w.ResponseWriter.Write(b)
 }
 
-func LoggerMiddleware(port int, logFields map[string]string, runLogDir string, logArea int,  productName, moduleName, env string) gin.HandlerFunc {
+func LoggerMiddleware(port int, logFields map[string]string, runLogDir string, logArea int, productName, moduleName, env string) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		logHeader := &log.LogFormat{}
 
@@ -93,7 +93,7 @@ func LoggerMiddleware(port int, logFields map[string]string, runLogDir string, l
 
 		responseBody := responseWriter.body.String()
 
-		if(dst.HttpCode == http.StatusOK) {
+		if dst.HttpCode == http.StatusOK {
 			log.Info(dst, map[string]interface{}{
 				"requestHeader": c.Request.Header,
 				"requestBody":   conversion.JsonToMap(strReqBody),

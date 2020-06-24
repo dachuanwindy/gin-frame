@@ -49,15 +49,15 @@ func initMachineId() []byte {
 }
 
 func StrToObjectId(str string) ObjectId {
-	byteArr,err := hex.DecodeString(str)
+	byteArr, err := hex.DecodeString(str)
 	if err != nil {
 		panic(err.Error())
 	}
 
-	var b[12]byte
+	var b [12]byte
 	i := 0
 	for {
-		if i == 12{
+		if i == 12 {
 			break
 		}
 		b[i] = byteArr[i]

@@ -7,14 +7,13 @@ import (
 	"gin-frame/libraries/config"
 	"gin-frame/libraries/log"
 	"gin-frame/libraries/util"
-	"gin-frame/libraries/xhop"
 	util_err "gin-frame/libraries/util/error"
+	"gin-frame/libraries/xhop"
 	"time"
 
 	"github.com/opentracing/opentracing-go"
 
 	//_ "github.com/go-sql-driver/mysql"
-
 
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/mysql"
@@ -22,7 +21,7 @@ import (
 
 type (
 	DB struct {
-		IsLog	bool
+		IsLog    bool
 		masterDB *gorm.DB
 		slaveDB  *gorm.DB
 		Config   *Config
@@ -107,9 +106,9 @@ func (db *DB) operate(ctx context.Context, op operate, query string, args ...int
 			}
 			return opentracing.StartSpan(operationName, opentracing.ChildOf(parent.Context()))
 		}()
-		logFormat  = log.LogHeaderFromContext(ctx)
-		startAt    = time.Now()
-		endAt      time.Time
+		logFormat = log.LogHeaderFromContext(ctx)
+		startAt   = time.Now()
+		endAt     time.Time
 	)
 
 	lastModule := logFormat.Module
@@ -129,7 +128,7 @@ func (db *DB) operate(ctx context.Context, op operate, query string, args ...int
 
 		logFormat.StartTime = startAt
 		logFormat.EndTime = endAt
-		latencyTime := logFormat.EndTime.Sub(logFormat.StartTime).Microseconds()// 执行时间
+		latencyTime := logFormat.EndTime.Sub(logFormat.StartTime).Microseconds() // 执行时间
 		logFormat.LatencyTime = latencyTime
 		logFormat.XHop = xhop.NewXhopNull()
 
@@ -141,7 +140,7 @@ func (db *DB) operate(ctx context.Context, op operate, query string, args ...int
 		if err != nil {
 			db.writeError(err.Error())
 			panic(err.Error())
-		}else if db.IsLog == true {
+		} else if db.IsLog == true {
 			log.Infof(logFormat, "%s:[%s], params:%s, used: %d milliseconds", operationName, query,
 				args, endAt.Sub(startAt).Milliseconds())
 		}
@@ -200,7 +199,7 @@ func errorsWrap(err error, msg string) error {
 	return fmt.Errorf("%s: %w", msg, err)
 }
 
-func (db *DB) writeError (errMsg string){
+func (db *DB) writeError(errMsg string) {
 	errLogSection := "error"
 	errorLogConfig := config.GetConfig("log", errLogSection)
 	errorLogdir := errorLogConfig.Key("dir").String()
@@ -208,12 +207,12 @@ func (db *DB) writeError (errMsg string){
 	date := time.Now().Format("2006-01-02")
 	dateTime := time.Now().Format("2006-01-02 15:04:05")
 	file := errorLogdir + "/mysql/" + date + ".err"
-	util.WriteWithIo(file,"[" +dateTime+"]" + errMsg)
+	util.WriteWithIo(file, "["+dateTime+"]"+errMsg)
 }
 
 func GetIsLog() bool {
 	cfg := config.GetConfig("log", "mysql_open")
-	res,err := cfg.Key("turn").Bool()
+	res, err := cfg.Key("turn").Bool()
 	util.Must(err)
 	return res
 }

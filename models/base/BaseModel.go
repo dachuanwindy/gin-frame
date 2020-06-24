@@ -2,11 +2,11 @@ package base
 
 import (
 	"fmt"
-	"gopkg.in/ini.v1"
 	"gin-frame/libraries/config"
 	"gin-frame/libraries/mysql"
 	"gin-frame/libraries/util"
 	util_err "gin-frame/libraries/util/error"
+	"gopkg.in/ini.v1"
 )
 
 var cfgs map[string]*ini.Section

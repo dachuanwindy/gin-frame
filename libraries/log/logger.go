@@ -9,7 +9,7 @@ import (
 )
 
 const (
-	DATETIME		  = "2006-01-02 15:04:05"
+	DATETIME          = "2006-01-02 15:04:05"
 	SHORTDATEFORMAT   = "20060102"
 	DATEFORMAT        = "2006-01-02"
 	DEFAULT_LOG_LEVEL = DEBUG
@@ -23,7 +23,7 @@ var (
 	initOnce         sync.Once
 )
 
-func (self *LogConfig)SetFile(file string){
+func (self *LogConfig) SetFile(file string) {
 	self.File = file
 }
 
@@ -71,7 +71,6 @@ func NewLogger(c *LogConfig) *Logger {
 		logLevel: LogLevel(c.Level),
 		hdlrs:    []LogHandler{FileHandlerAdapterWithConfig(c)},
 	}
-
 
 	if c.Debug {
 		//NewStdColorfulHandler is a singleton call
@@ -143,7 +142,7 @@ func (l *Logger) output(calldepth int, lvl LogLevel, logContent *LogFormat, s in
 	logContent.Msg = s
 	logContent.EndTime = time.Now()
 	//logContent.MilliSecond = millts(logContent.Timestamp)
-	latencyTime := logContent.EndTime.Sub(logContent.StartTime).Microseconds()// 执行时间
+	latencyTime := logContent.EndTime.Sub(logContent.StartTime).Microseconds() // 执行时间
 	logContent.LatencyTime = latencyTime
 	logContent.TimeUnit = "Microseconds"
 

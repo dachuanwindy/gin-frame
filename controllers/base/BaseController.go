@@ -1,35 +1,36 @@
 package base
 
 import (
+	"gin-frame/libraries/log"
+	"gin-frame/libraries/util"
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"strconv"
 	"sync"
-	"gin-frame/libraries/log"
-	"gin-frame/libraries/util"
 )
+
 var lock sync.RWMutex
 
 type BaseController struct {
-	HasError	bool
+	HasError bool
 
-	LogFormat  *log.LogFormat
-	C			*gin.Context
-	XhopN		uint64
+	LogFormat *log.LogFormat
+	C         *gin.Context
+	XhopN     uint64
 
-	Cid			int
-	AppUid		int
-	AppId		int
+	Cid    int
+	AppUid int
+	AppId  int
 
-	UserAppInfo	map[string]interface{}
+	UserAppInfo map[string]interface{}
 
-	Code 		int
-	Msg  		string
-	Data 		map[string]interface{}
-	UserMsg		string
+	Code    int
+	Msg     string
+	Data    map[string]interface{}
+	UserMsg string
 }
 
-func (self *BaseController) Init(c *gin.Context, productName,moduleName string){
+func (self *BaseController) Init(c *gin.Context, productName, moduleName string) {
 	self.C = c
 	self.XhopN = 0
 
@@ -40,11 +41,11 @@ func (self *BaseController) Init(c *gin.Context, productName,moduleName string){
 	self.initResult()
 }
 
-func (self *BaseController) ResultJson(){
+func (self *BaseController) ResultJson() {
 	self.C.JSON(http.StatusOK, gin.H{
-		"errno":	self.Code,
-		"errmsg":	self.Msg,
-		"data":	self.Data,
+		"errno":    self.Code,
+		"errmsg":   self.Msg,
+		"data":     self.Data,
 		"user_msg": self.UserMsg,
 	})
 }
@@ -63,7 +64,7 @@ func (self *BaseController) SetYmt() {
 	self.setAppUid()
 }
 
-func (self *BaseController) initResult(){
+func (self *BaseController) initResult() {
 	data := make(map[string]interface{})
 	self.Code = 0
 	self.Msg = "success"
@@ -106,4 +107,3 @@ func (self *BaseController) setAppId() {
 
 	self.AppId = AppId
 }
-

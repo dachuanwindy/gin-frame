@@ -3,16 +3,16 @@ package rabbitmq
 import (
 	"context"
 	"fmt"
-	"github.com/opentracing/opentracing-go"
-	"github.com/streadway/amqp"
-	srcLog "log"
-	"net/http"
-	"time"
 	"gin-frame/libraries/app"
 	"gin-frame/libraries/config"
 	"gin-frame/libraries/log"
 	"gin-frame/libraries/util"
 	"gin-frame/libraries/xhop"
+	"github.com/opentracing/opentracing-go"
+	"github.com/streadway/amqp"
+	srcLog "log"
+	"net/http"
+	"time"
 )
 
 // 定义接收者接口
@@ -68,7 +68,7 @@ func NewConsumer(amqpURI, queueName, tag string, consumeMsg ConsumeMsg) (*Consum
 	deliveries, err := c.channel.Consume(
 		queueName, // name
 		c.tag,     // consumerTag,
-		false,      // noAck
+		false,     // noAck
 		false,     // exclusive
 		false,     // noLocal
 		false,     // noWait
@@ -82,12 +82,12 @@ func NewConsumer(amqpURI, queueName, tag string, consumeMsg ConsumeMsg) (*Consum
 	for d := range deliveries {
 		go consume(d, consumeMsg)
 	}
-	<- c.done
+	<-c.done
 
 	return c, nil
 }
 
-func consume(d amqp.Delivery, consumeMsg ConsumeMsg){
+func consume(d amqp.Delivery, consumeMsg ConsumeMsg) {
 	logId := log.NewObjectId().Hex()
 
 	logFormat := &log.LogFormat{
@@ -121,7 +121,7 @@ func consume(d amqp.Delivery, consumeMsg ConsumeMsg){
 	}
 }
 
-func writeInfoLog(logFormat *log.LogFormat, d amqp.Delivery, consumeMsg ConsumeMsg){
+func writeInfoLog(logFormat *log.LogFormat, d amqp.Delivery, consumeMsg ConsumeMsg) {
 	runLogSection := "amqp"
 	runLogConfig := config.GetConfig("log", runLogSection)
 	runLogdir := runLogConfig.Key("dir").String()
@@ -143,17 +143,17 @@ func NewProducer(msg, amqpURI, exchangeName, exchangeType, queueName, routeName,
 	var (
 		parent        = opentracing.SpanFromContext(ctx)
 		operationName = "producer"
-		statement 	  = fmt.Sprintf("amqpUri:%s, exchange:%s, exchange_type:%s, queue:%s, route_name:%s, msg:%s ",
+		statement     = fmt.Sprintf("amqpUri:%s, exchange:%s, exchange_type:%s, queue:%s, route_name:%s, msg:%s ",
 			amqpURI, exchangeName, exchangeType, queueName, routeName, msg)
-		span          = func() opentracing.Span {
+		span = func() opentracing.Span {
 			if parent == nil {
 				return opentracing.StartSpan(operationName)
 			}
 			return opentracing.StartSpan(operationName, opentracing.ChildOf(parent.Context()))
 		}()
-		logFormat  = log.LogHeaderFromContext(ctx)
-		startAt    = time.Now()
-		endAt      time.Time
+		logFormat = log.LogHeaderFromContext(ctx)
+		startAt   = time.Now()
+		endAt     time.Time
 	)
 	var err error
 
@@ -174,7 +174,7 @@ func NewProducer(msg, amqpURI, exchangeName, exchangeType, queueName, routeName,
 
 		logFormat.StartTime = startAt
 		logFormat.EndTime = endAt
-		latencyTime := logFormat.EndTime.Sub(logFormat.StartTime).Microseconds()// 执行时间
+		latencyTime := logFormat.EndTime.Sub(logFormat.StartTime).Microseconds() // 执行时间
 		logFormat.LatencyTime = latencyTime
 		logFormat.XHop = xhop.NewXhopNull()
 
@@ -184,7 +184,7 @@ func NewProducer(msg, amqpURI, exchangeName, exchangeType, queueName, routeName,
 
 		if err != nil {
 			log.Errorf(logFormat, "%s:[%s], error: %s", operationName, statement, err)
-		}else if GetIsLog() == true {
+		} else if GetIsLog() == true {
 			log.Infof(logFormat, statement)
 		}
 
@@ -222,27 +222,27 @@ func NewProducer(msg, amqpURI, exchangeName, exchangeType, queueName, routeName,
 	}
 	defer c.channel.Close()
 
-	err = c.channel.ExchangeDeclare(exchangeName, exchangeType, true, false, false,  false, nil)
+	err = c.channel.ExchangeDeclare(exchangeName, exchangeType, true, false, false, false, nil)
 	util.Must(err)
 
 	_, err = c.channel.QueueDeclare(
 		queueName, // routing_key
-		true,   // durable
-		false,   // delete when unused
-		false,   // exclusive
-		false,   // no-wait
-		nil,     // arguments
+		true,      // durable
+		false,     // delete when unused
+		false,     // exclusive
+		false,     // no-wait
+		nil,       // arguments
 	)
 	util.Must(err)
 
 	err = c.channel.QueueBind(queueName, routeName, exchangeName, false, nil)
 	util.Must(err)
 	err = c.channel.Publish(
-		exchangeName,     // exchange
-		routeName, // routing key
-		false,  // mandatory
-		false,  // immediate
-		amqp.Publishing {
+		exchangeName, // exchange
+		routeName,    // routing key
+		false,        // mandatory
+		false,        // immediate
+		amqp.Publishing{
 			ContentType: "text/plain",
 			Body:        []byte(msg),
 		})
@@ -273,16 +273,16 @@ func NewProducerCmd(msg, amqpURI, exchangeName, exchangeType, queueName, routeNa
 	}
 	c.channel.Close()
 
-	err = c.channel.ExchangeDeclare(exchangeName, exchangeType, true, false, false,  false, nil)
+	err = c.channel.ExchangeDeclare(exchangeName, exchangeType, true, false, false, false, nil)
 	util.Must(err)
 
 	_, err = c.channel.QueueDeclare(
 		queueName, // routing_key
-		true,   // durable
-		false,   // delete when unused
-		false,   // exclusive
-		false,   // no-wait
-		nil,     // arguments
+		true,      // durable
+		false,     // delete when unused
+		false,     // exclusive
+		false,     // no-wait
+		nil,       // arguments
 	)
 	util.Must(err)
 
@@ -290,11 +290,11 @@ func NewProducerCmd(msg, amqpURI, exchangeName, exchangeType, queueName, routeNa
 	util.Must(err)
 
 	err = c.channel.Publish(
-		exchangeName,     // exchange
-		routeName, // routing key
-		false,  // mandatory
-		false,  // immediate
-		amqp.Publishing {
+		exchangeName, // exchange
+		routeName,    // routing key
+		false,        // mandatory
+		false,        // immediate
+		amqp.Publishing{
 			ContentType: "text/plain",
 			Body:        []byte(msg),
 		})

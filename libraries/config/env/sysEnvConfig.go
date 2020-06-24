@@ -11,7 +11,7 @@ type SysEnvConfig struct {
 	NamespaceName string
 	Secret        string
 	//Token        string
-	IP            string
+	IP string
 }
 
 func (sysEnvConfig *SysEnvConfig) LoadSysConfig() (*config.AppConfig, error) {

@@ -32,7 +32,7 @@ func (OriginPrice) TableName() string {
 }
 
 type OriginPriceModel struct {
-	Db          *mysql.DB
+	Db *mysql.DB
 }
 
 var instance *OriginPriceModel

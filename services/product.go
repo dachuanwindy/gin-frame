@@ -2,23 +2,23 @@ package services
 
 import (
 	"context"
-	"strconv"
-	"gin-frame/libraries/util"
 	"gin-frame/libraries/redis"
+	"gin-frame/libraries/util"
+	"strconv"
 
 	redigo "github.com/gomodule/redigo/redis"
 )
 
 const (
-	product_detail  = 	"hangqing_category::id_detail:"
-	product_name	 =	"product::id_name:"
+	product_detail = "hangqing_category::id_detail:"
+	product_name   = "product::id_name:"
 )
 
 func GetProductDetail(ctx context.Context, id int) string {
 	db, err := redis.Conn("product")
 	util.Must(err)
 
-	data, err := redigo.String( db.Do(ctx, "GET", product_name + strconv.Itoa(id)) )
+	data, err := redigo.String(db.Do(ctx, "GET", product_name+strconv.Itoa(id)))
 	util.Must(err)
 	return data
 }
@@ -28,11 +28,11 @@ func BatchProductDetail(ctx context.Context, ids []int) []string {
 	util.Must(err)
 
 	var args []interface{}
-	for _,v := range ids {
-		args = append(args, product_detail + strconv.Itoa(v))
+	for _, v := range ids {
+		args = append(args, product_detail+strconv.Itoa(v))
 	}
 
-	data, err := redigo.Strings(db.Do(ctx,"MGET",  args...))
+	data, err := redigo.Strings(db.Do(ctx, "MGET", args...))
 	util.Must(err)
 
 	return data

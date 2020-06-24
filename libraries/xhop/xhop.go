@@ -5,8 +5,8 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
-	"strconv"
 	"net/http"
+	"strconv"
 )
 
 //
@@ -368,14 +368,14 @@ func (x *XHop) GetCount() uint64 {
 	return x.c
 }
 
-func (node *XHop)GetNext() *XHop {
+func (node *XHop) GetNext() *XHop {
 	return node.NextN(node.c)
 }
 
-func Test(){
+func Test() {
 	node := NewXHop()
 	fmt.Println(node)
-	fmt.Println(node.Next()) //当前node第1次调用
-	fmt.Println(node.NextN(1))	//当前node第2次调用
-	fmt.Println(node.NextN(2))	//当前node第3次调用
+	fmt.Println(node.Next())   //当前node第1次调用
+	fmt.Println(node.NextN(1)) //当前node第2次调用
+	fmt.Println(node.NextN(2)) //当前node第3次调用
 }
