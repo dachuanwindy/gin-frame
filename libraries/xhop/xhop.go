@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"strconv"
+	"net/http"
 )
 
 //
@@ -77,6 +78,21 @@ import (
 type XHop struct {
 	buf []byte //use little endian for efficiency
 	c   uint64 //current children rpc call counter
+}
+
+func NextXhop(header http.Header, headerXhop string) *XHop {
+	var xhopHex = header.Get(headerXhop)
+	var xHopInfo *XHop
+	var err error
+	if xhopHex == "" {
+		xHopInfo = NewXHop()
+	} else if xHopInfo, err = NewFromHex(xhopHex); err != nil {
+		xHopInfo = NewXHop()
+	} else {
+		xHopInfo = xHopInfo.Next()
+	}
+
+	return xHopInfo
 }
 
 func NewXhopNull() *XHop {

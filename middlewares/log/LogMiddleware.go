@@ -2,9 +2,11 @@ package log
 
 import (
 	"bytes"
-	"github.com/gin-gonic/gin"
 	"io/ioutil"
-	"gin-frame/libraries/config"
+	"net/http"
+	"strconv"
+	"time"
+	"github.com/gin-gonic/gin"
 	"gin-frame/libraries/log"
 	"gin-frame/libraries/util/dir"
 	"gin-frame/libraries/util/conversion"
@@ -12,15 +14,6 @@ import (
 	"gin-frame/libraries/util/random"
 	"gin-frame/libraries/util/sys"
 	"gin-frame/libraries/xhop"
-	"net/http"
-	"strconv"
-	"time"
-)
-
-const (
-	QueryLogID   = "logid"
-	HeaderXLogID = "x-logid"
-	HeaderXHop   = "x-hop"
 )
 
 type bodyLogWriter struct {
@@ -33,32 +26,12 @@ func (w bodyLogWriter) Write(b []byte) (int, error) {
 	return w.ResponseWriter.Write(b)
 }
 
-func NextXhop(header http.Header) *xhop.XHop {
-	var xhopHex = header.Get(HeaderXHop)
-	var xHopInfo *xhop.XHop
-	var err error
-	if xhopHex == "" {
-		xHopInfo = xhop.NewXHop()
-	} else if xHopInfo, err = xhop.NewFromHex(xhopHex); err != nil {
-		xHopInfo = xhop.NewXHop()
-	} else {
-		xHopInfo = xHopInfo.Next()
-	}
-
-	return xHopInfo
-}
-
-func LoggerMiddleware(port int, productName, moduleName string) gin.HandlerFunc {
+func LoggerMiddleware(port int, logFields map[string]string, runLogDir string, logArea int,  productName, moduleName, env string) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		logHeader := &log.LogFormat{}
 
-		runLogSection := "run"
-		runLogConfig := config.GetConfig("log", runLogSection)
-		runLogDir := runLogConfig.Key("dir").String()
-		area, _ := runLogConfig.Key("area").Int()
-
 		file := dir.CreateHourLogFile(runLogDir, moduleName+".log."+sys.HostName()+".")
-		file = file + "/" + strconv.Itoa(random.RandomN(area))
+		file = file + "/" + strconv.Itoa(random.RandomN(logArea))
 
 		log.Init(&log.LogConfig{
 			File:           file,
@@ -66,14 +39,14 @@ func LoggerMiddleware(port int, productName, moduleName string) gin.HandlerFunc 
 			Mode:           1,
 			AsyncFormatter: false,
 			Debug:          true,
-		}, file)
+		}, runLogDir, file)
 
 		var logID string
 		switch {
-		case c.Query(QueryLogID) != "":
-			logID = c.Query(QueryLogID)
-		case c.Request.Header.Get(HeaderXLogID) != "":
-			logID = c.Request.Header.Get(HeaderXLogID)
+		case c.Query(logFields["query_id"]) != "":
+			logID = c.Query(logFields["query_id"])
+		case c.Request.Header.Get(logFields["header_id"]) != "":
+			logID = c.Request.Header.Get(logFields["header_id"])
 		default:
 			logID = log.NewObjectId().Hex()
 		}
@@ -82,23 +55,21 @@ func LoggerMiddleware(port int, productName, moduleName string) gin.HandlerFunc 
 		dst := new(log.LogFormat)
 		*dst = *logHeader
 
-		dst.HttpCode = c.Writer.Status()
 		dst.Port = port
 		dst.LogId = logID
 		dst.Method = c.Request.Method
 		dst.CallerIp = c.ClientIP()
 		dst.UriPath = c.Request.RequestURI
-		dst.XHop = NextXhop(c.Request.Header)
+		dst.XHop = xhop.NextXhop(c.Request.Header, logFields["header_hop"])
 		dst.Product = productName
 		dst.Module = moduleName
 
-		//TODO
-		dst.Env = "development"
+		dst.Env = env
 
 		ctx = log.ContextWithLogHeader(ctx, dst)
 		c.Request = c.Request.WithContext(ctx)
-		c.Writer.Header().Set(HeaderXLogID, dst.LogId)
-		c.Writer.Header().Set(HeaderXHop, dst.XHop.String())
+		c.Writer.Header().Set(logFields["header_id"], dst.LogId)
+		c.Writer.Header().Set(logFields["header_hop"], dst.XHop.String())
 
 		reqBody := []byte{}
 		if c.Request.Body != nil { // Read
@@ -114,13 +85,17 @@ func LoggerMiddleware(port int, productName, moduleName string) gin.HandlerFunc 
 
 		c.Next() // 处理请求
 
+		dst.HttpCode = c.Writer.Status()
+
 		responseBody := responseWriter.body.String()
 
-		log.Info(dst, map[string]interface{}{
-			"requestHeader": c.Request.Header,
-			"requestBody":   conversion.JsonToMap(strReqBody),
-			"responseBody":  conversion.JsonToMap(responseBody),
-			"uriQuery":      url.ParseUriQueryToMap(c.Request.URL.RawQuery),
-		})
+		if(dst.HttpCode == http.StatusOK) {
+			log.Info(dst, map[string]interface{}{
+				"requestHeader": c.Request.Header,
+				"requestBody":   conversion.JsonToMap(strReqBody),
+				"responseBody":  conversion.JsonToMap(responseBody),
+				"uriQuery":      url.ParseUriQueryToMap(c.Request.URL.RawQuery),
+			})
+		}
 	}
 }

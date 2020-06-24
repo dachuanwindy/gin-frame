@@ -1,23 +1,38 @@
 package panic
 
 import (
-	"gin-frame/controllers/base"
-	"gin-frame/codes"
-	"fmt"
-	"github.com/gin-gonic/gin"
-	"net/http"
+	"bytes"
 	"runtime/debug"
+	"net/http"
+	"io/ioutil"
 	"strconv"
 	"strings"
 	"time"
+	"github.com/gin-gonic/gin"
+	"gin-frame/controllers/base"
+	"gin-frame/codes"
 	"gin-frame/libraries/util"
+	"gin-frame/libraries/log"
+	"gin-frame/libraries/xhop"
+	"gin-frame/libraries/util/conversion"
+	"gin-frame/libraries/util/url"
 )
 
-func ThrowPanic(dir,moduleName string, baseController *base.BaseController, area int) gin.HandlerFunc{
+type bodyLogWriter struct {
+	gin.ResponseWriter
+	body *bytes.Buffer
+}
+
+func (w bodyLogWriter) Write(b []byte) (int, error) {
+	w.body.Write(b)
+	return w.ResponseWriter.Write(b)
+}
+
+func ThrowPanic(port int,logFields map[string]string, dir string, area int, productName, moduleName, env string, baseController *base.BaseController) gin.HandlerFunc{
 	return func(c *gin.Context) {
-		defer func() {
+		defer func(c *gin.Context) {
 			if err := recover(); err != nil {
-				baseController.HasReturn = true //用于处理重复返回JSON标志
+				baseController.SetHasError(true) //用于处理重复返回JSON标志
 				c.JSON(http.StatusInternalServerError, gin.H{
 					"errno":	codes.SERVER_ERROR,
 					"errmsg":	codes.ErrorMsg[codes.SERVER_ERROR],
@@ -25,20 +40,86 @@ func ThrowPanic(dir,moduleName string, baseController *base.BaseController, area
 					"user_msg": codes.ErrorUserMsg[codes.SERVER_ERROR],
 				})
 
-				DebugStack := ""
-				for _, v := range strings.Split(string(debug.Stack()), "\n") {
-					DebugStack += v + "\n"
+				debugStack := make(map[int]interface{})
+				for k, v := range strings.Split(string(debug.Stack()), "\n") {
+					debugStack[k] = v
 				}
 
-				dateTime := time.Now().Format("2006-01-02 15:04:05")
 				file := util.CreateDateDir(dir, moduleName + ".err." + util.HostName() + ".")
 				file = file + "/" + strconv.Itoa(util.RandomN(area))
-				util.WriteWithIo(file,"[" +dateTime+"]")
+
+				log.Init(&log.LogConfig{
+					File:           file,
+					Path:           dir,
+					Mode:           1,
+					AsyncFormatter: false,
+					Debug:          true,
+				}, dir, file)
+
+				var logID string
+				switch {
+				case c.Query(logFields["query_id"]) != "":
+					logID = c.Query(logFields["query_id"])
+				case c.Request.Header.Get(logFields["header_id"]) != "":
+					logID = c.Request.Header.Get(logFields["header_id"])
+				default:
+					logID = log.NewObjectId().Hex()
+				}
+		
+				logHeader := &log.LogFormat{}
+				ctx := c.Request.Context()
+				dst := new(log.LogFormat)
+				*dst = *logHeader
+		
+				dst.Port = port
+				dst.LogId = logID
+				dst.Method = c.Request.Method
+				dst.CallerIp = c.ClientIP()
+				dst.UriPath = c.Request.RequestURI
+				dst.XHop = xhop.NextXhop(c.Request.Header, logFields["header_hop"])
+				dst.Product = productName
+				dst.Module = moduleName		
+				dst.Env = env
+		
+				ctx = log.ContextWithLogHeader(ctx, dst)
+				c.Request = c.Request.WithContext(ctx)
+				c.Writer.Header().Set(logFields["header_id"], dst.LogId)
+				c.Writer.Header().Set(logFields["header_hop"], dst.XHop.String())
+		
+				reqBody := []byte{}
+				if c.Request.Body != nil { // Read
+					reqBody, _ = ioutil.ReadAll(c.Request.Body)
+				}
+				strReqBody := string(reqBody)
+		
+				c.Request.Body = ioutil.NopCloser(bytes.NewBuffer(reqBody)) // Reset
+				responseWriter := &bodyLogWriter{body: bytes.NewBuffer(nil), ResponseWriter: c.Writer}
+				c.Writer = responseWriter
+		
+				dst.StartTime = time.Now()
+		
+				c.Next() // 处理请求
+		
+				dst.HttpCode = c.Writer.Status()
+		
+				responseBody := responseWriter.body.String()
+		
+				log.Error(dst, map[string]interface{}{
+					"requestHeader": c.Request.Header,
+					"requestBody":   conversion.JsonToMap(strReqBody),
+					"responseBody":  conversion.JsonToMap(responseBody),
+					"uriQuery":      url.ParseUriQueryToMap(c.Request.URL.RawQuery),
+					"err":			 err,
+					"trace":         debugStack,
+				})
+
+
+				/* util.WriteWithIo(file,"[" +dateTime+"]")
 				util.WriteWithIo(file, fmt.Sprintf("%v\r\n", err))
-				util.WriteWithIo(file, DebugStack)
+				util.WriteWithIo(file, debugStack) */
 				c.Done()
 			}
-		}()
+		}(c)
 		c.Next()
 
 	}

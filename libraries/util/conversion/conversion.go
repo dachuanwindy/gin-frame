@@ -8,6 +8,12 @@ import (
 	"gin-frame/libraries/util/error"
 )
 
+func MapToJsonInt(data map[int]interface{}) string {
+	jsonStr, err := json.Marshal(data)
+	error.Must(err)
+	return string(jsonStr)
+}
+
 func MapToJson(data map[string]interface{}) string {
 	jsonStr, err := json.Marshal(data)
 	error.Must(err)

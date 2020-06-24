@@ -1,12 +1,23 @@
 # gin-frame
-基于go-gin开发的api框架，封装各种常用组件
+
+基于 go-gin 开发的 api 框架，封装各种常用组件
 
 # run
-go run main.go 
+
+go run main.go
 
 curl localhost:777/ping
 
+# app.ini example:
+
+[app]
+env = development
+port = 777
+product = gin-frame
+module = gin-frame
+
 # mysql.ini example:
+
 [default]
 host = 127.0.0.1
 user = why
@@ -19,6 +30,7 @@ max_open = 8
 max_idle = 4
 
 # redis.ini example:
+
 ```
 [default]
 host = 127.0.0.1
@@ -31,6 +43,7 @@ is_log = true
 ```
 
 # log.ini example:
+
 ```
 [run]
 run_dir = ./logs/run/
@@ -60,10 +73,9 @@ turn = true
 ```
 
 # es.ini example:
+
 ```
 [default]
 host = http://127.0.0.1
 port = 9200
 ```
-
-

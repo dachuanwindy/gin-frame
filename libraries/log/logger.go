@@ -27,13 +27,19 @@ func (self *LogConfig)SetFile(file string){
 	self.File = file
 }
 
-func Init(logConfig *LogConfig, file string) {
+func Init(logConfig *LogConfig, path, file string) {
 	//设置默认值
 	if logConfig.Path == "" {
 		logConfig.Path = DEFAULT_LOG_PATH
 	}
 	if logConfig.File == "" {
 		logConfig.File = DEFAULT_LOG_FILE
+	}
+	if path != "" {
+		logConfig.Path = path
+	}
+	if file != "" {
+		logConfig.File = file
 	}
 
 	if logConfig.RotatingFileHandler == "" {
@@ -58,7 +64,6 @@ type Logger struct {
 /*
 * 命名参考Python TimedRotatingFileHandler
 * 目前的实现本质上就是个TimedRotatingFileHandler
-* https://docs.python.org/2/gin-frame/librariesrary/logging.handlers.html#timedrotatingfilehandler
  */
 func NewLogger(c *LogConfig) *Logger {
 	logger := &Logger{

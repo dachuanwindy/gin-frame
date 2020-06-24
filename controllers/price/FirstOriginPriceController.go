@@ -30,7 +30,6 @@ func (self *FirstOriginPriceController) action() {
 }
 
 func (self *FirstOriginPriceController) setData() {
-
 	self.Data["origin"] = self.OriginPrice
 }
 
