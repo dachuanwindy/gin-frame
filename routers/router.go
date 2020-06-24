@@ -15,9 +15,6 @@ import (
 func InitRouter(port int, productName, moduleName,env string) *gin.Engine {
 	server := gin.New()
 
-	baseController 	 := &base.BaseController{}
-	firstOriginPriceController := &price.FirstOriginPriceController{}
-
 	server.Use(gin.Recovery())
 
 	server.Use(trace.OpenTracing(productName))
@@ -40,8 +37,11 @@ func InitRouter(port int, productName, moduleName,env string) *gin.Engine {
 	errorLogDir := errorLogConfig.Key("dir").String()
 	errorLogArea, err := errorLogConfig.Key("area").Int()
 	util.Must(err)
-	server.Use(panic.ThrowPanic(port, logFields, errorLogDir, errorLogArea, productName, moduleName, env, baseController))
+	server.Use(panic.ThrowPanic(port, logFields, errorLogDir, errorLogArea, productName, moduleName, env))
 	//server.Use(dump.BodyDump())
+
+	baseController 	 := &base.BaseController{}
+	firstOriginPriceController := &price.FirstOriginPriceController{}
 
 	group := server.Group("")
 	group.GET("/ping", func(c *gin.Context) {

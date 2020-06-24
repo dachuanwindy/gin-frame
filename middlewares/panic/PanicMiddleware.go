@@ -9,7 +9,6 @@ import (
 	"strings"
 	"time"
 	"github.com/gin-gonic/gin"
-	"gin-frame/controllers/base"
 	"gin-frame/codes"
 	"gin-frame/libraries/util"
 	"gin-frame/libraries/log"
@@ -28,11 +27,10 @@ func (w bodyLogWriter) Write(b []byte) (int, error) {
 	return w.ResponseWriter.Write(b)
 }
 
-func ThrowPanic(port int,logFields map[string]string, dir string, area int, productName, moduleName, env string, baseController *base.BaseController) gin.HandlerFunc{
+func ThrowPanic(port int,logFields map[string]string, dir string, area int, productName, moduleName, env string) gin.HandlerFunc{
 	return func(c *gin.Context) {
 		defer func(c *gin.Context) {
 			if err := recover(); err != nil {
-				baseController.SetHasError(true) //用于处理重复返回JSON标志
 				c.JSON(http.StatusInternalServerError, gin.H{
 					"errno":	codes.SERVER_ERROR,
 					"errmsg":	codes.ErrorMsg[codes.SERVER_ERROR],
@@ -98,8 +96,6 @@ func ThrowPanic(port int,logFields map[string]string, dir string, area int, prod
 		
 				dst.StartTime = time.Now()
 		
-				c.Next() // 处理请求
-		
 				dst.HttpCode = c.Writer.Status()
 		
 				responseBody := responseWriter.body.String()
@@ -121,6 +117,5 @@ func ThrowPanic(port int,logFields map[string]string, dir string, area int, prod
 			}
 		}(c)
 		c.Next()
-
 	}
 }

@@ -37,34 +37,16 @@ func (self *BaseController) Init(c *gin.Context, productName,moduleName string){
 	logFormat.Product = productName
 	logFormat.Module = moduleName
 	self.LogFormat = logFormat
-	self.SetHasError(false)
 	self.initResult()
 }
 
-//用于处理error返回值状态标记写问题
-func (self *BaseController) SetHasError(status bool) {
-	lock.Lock()
-	self.HasError = status
-	lock.Unlock()
-}
-
-//用于处理error返回值状态标记读问题
-func (self *BaseController) GetHasError() bool {
-	lock.RLock()
-	hasError := self.HasError
-	lock.RUnlock()
-	return hasError
-}
-
 func (self *BaseController) ResultJson(){
-	if self.GetHasError() == false {
-		self.C.JSON(http.StatusOK, gin.H{
-			"errno":	self.Code,
-			"errmsg":	self.Msg,
-			"data":	self.Data,
-			"user_msg": self.UserMsg,
-		})
-	}
+	self.C.JSON(http.StatusOK, gin.H{
+		"errno":	self.Code,
+		"errmsg":	self.Msg,
+		"data":	self.Data,
+		"user_msg": self.UserMsg,
+	})
 }
 
 func (self *BaseController) Ping() {
