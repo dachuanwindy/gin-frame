@@ -17,5 +17,6 @@ require (
 	github.com/pkg/errors v0.9.1
 	github.com/streadway/amqp v1.0.0
 	github.com/zouyx/agollo/v3 v3.4.0
+	golang.org/x/tools v0.0.0-20200226224502-204d844ad48d
 	gopkg.in/ini.v1 v1.57.0
 )
