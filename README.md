@@ -76,7 +76,8 @@ area = 1
 
 [amqp]
 amqp_dir = ./logs/amqp/
-dir = ./amqp/
+dir = ./logs/amqp/
+area = 1
 
 [mysql_open]
 turn = true
