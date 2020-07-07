@@ -3,6 +3,8 @@ package price
 import (
 	"gin-frame/controllers/base"
 	"gin-frame/models/hangqing"
+	"gin-frame/services/product"
+
 	"github.com/gin-gonic/gin"
 )
 
@@ -31,6 +33,7 @@ func (self *FirstOriginPriceController) action() {
 
 func (self *FirstOriginPriceController) setData() {
 	self.Data["origin"] = self.OriginPrice
+	self.Data["redis"] = product.GetProductDetail(self.C, 8426)
 }
 
 func (self *FirstOriginPriceController) getOrigin() {

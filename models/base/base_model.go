@@ -1,7 +1,10 @@
+/*
+ * @Descripttion:
+ * @Author: weihaoyu
+ */
 package base
 
 import (
-	"fmt"
 	"github.com/why444216978/go-library/libraries/config"
 	"github.com/why444216978/go-library/libraries/mysql"
 	"github.com/why444216978/go-library/libraries/util"
@@ -55,7 +58,6 @@ func getConn(conn string) *mysql.DB {
 
 func getMaxOpen(conn string) int {
 	cfg := getCfg(conn)
-	fmt.Println(cfg)
 	masterNum, err := cfg.Key("max_open").Int()
 	util_err.Must(err)
 	return masterNum

@@ -59,6 +59,7 @@ auth =
 max_active = 600
 max_idle = 10
 is_log = true
+exec_timeout = 100000
 ```
 
 # log.ini example:
