@@ -1,9 +1,10 @@
-package config
+package agollo
 
 import (
 	"fmt"
-	env "gin-frame/libraries/config/env"
+	env "gin-frame/libraries/agollo/env"
 	util_err "gin-frame/libraries/util/error"
+
 	"github.com/astaxie/beego/config"
 	agollo "github.com/zouyx/agollo/v3"
 )
