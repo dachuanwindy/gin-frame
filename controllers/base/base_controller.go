@@ -1,8 +1,8 @@
 package base
 
 import (
-	"gin-frame/libraries/log"
-	"gin-frame/libraries/util"
+	"github.com/why444216978/go-library/libraries/log"
+	"github.com/why444216978/go-library/libraries/util"
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"strconv"

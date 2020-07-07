@@ -2,14 +2,16 @@ package main
 
 import (
 	"fmt"
-	"gin-frame/libraries/config"
-	"gin-frame/libraries/endless"
-	"gin-frame/libraries/util/error"
-	"gin-frame/routers"
 	"log"
 	"runtime"
 	"strconv"
 	"syscall"
+
+	"gin-frame/routers"
+
+	"github.com/why444216978/go-library/libraries/config"
+	"github.com/why444216978/go-library/libraries/endless"
+	"github.com/why444216978/go-library/libraries/util/error"
 )
 
 var (

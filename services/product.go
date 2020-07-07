@@ -2,8 +2,8 @@ package services
 
 import (
 	"context"
-	"gin-frame/libraries/redis"
-	"gin-frame/libraries/util"
+	"github.com/why444216978/go-library/libraries/redis"
+	"github.com/why444216978/go-library/libraries/util"
 	"strconv"
 
 	redigo "github.com/gomodule/redigo/redis"

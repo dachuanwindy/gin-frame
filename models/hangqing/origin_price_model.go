@@ -1,7 +1,7 @@
 package hangqing
 
 import (
-	"gin-frame/libraries/mysql"
+	"github.com/why444216978/go-library/libraries/mysql"
 	"gin-frame/models/base"
 	"github.com/jinzhu/gorm"
 )

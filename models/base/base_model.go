@@ -2,10 +2,10 @@ package base
 
 import (
 	"fmt"
-	"gin-frame/libraries/config"
-	"gin-frame/libraries/mysql"
-	"gin-frame/libraries/util"
-	util_err "gin-frame/libraries/util/error"
+	"github.com/why444216978/go-library/libraries/config"
+	"github.com/why444216978/go-library/libraries/mysql"
+	"github.com/why444216978/go-library/libraries/util"
+	util_err "github.com/why444216978/go-library/libraries/util/error"
 	"gopkg.in/ini.v1"
 )
 

@@ -1,8 +1,14 @@
+<!--
+ * @Descripttion:
+ * @Author: weihaoyu
+-->
+
 # gin-frame
 
 基于 go-gin 开发的 api 框架，封装各种常用组件
 
 # run
+
 ```
 go run main.go
 
@@ -10,15 +16,18 @@ curl localhost:777/ping
 ```
 
 # app.ini example:
+
 ```
 [app]
 env = development
 port = 777
+app_id = moments-server
 product = gin-frame
 module = gin-frame
 ```
 
 # mysql.ini example:
+
 ```
 [default]
 host = 127.0.0.1

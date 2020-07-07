@@ -2,7 +2,7 @@ package trace
 
 import (
 	"context"
-	"gin-frame/libraries/log"
+	"github.com/why444216978/go-library/libraries/log"
 	"net/http"
 	"net/url"
 	"time"

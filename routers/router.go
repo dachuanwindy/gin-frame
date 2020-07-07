@@ -3,12 +3,13 @@ package routers
 import (
 	"gin-frame/controllers/base"
 	"gin-frame/controllers/price"
-	"gin-frame/libraries/config"
-	"gin-frame/libraries/util"
 	"gin-frame/middlewares/log"
 	"gin-frame/middlewares/panic"
 	"gin-frame/middlewares/trace"
+
 	"github.com/gin-gonic/gin"
+	"github.com/why444216978/go-library/libraries/config"
+	"github.com/why444216978/go-library/libraries/util"
 )
 
 func InitRouter(port int, productName, moduleName, env string) *gin.Engine {
