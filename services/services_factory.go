@@ -15,10 +15,8 @@ func (factory *ServicesFactory) GetInstance(name string) map[string]interface{} 
 	switch name {
 	case "Location":
 		instances[name] = &location.Location{}
-		return instances
 	case "Product":
 		instances[name] = &product.Product{}
-		return instances
 	default:
 		panic("services name error")
 	}
