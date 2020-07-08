@@ -3,6 +3,8 @@ package price
 import (
 	"gin-frame/controllers/base"
 	"gin-frame/models/hangqing"
+	"gin-frame/services"
+	"gin-frame/services/location"
 	"gin-frame/services/product"
 
 	"github.com/gin-gonic/gin"
@@ -10,8 +12,7 @@ import (
 
 type FirstOriginPriceController struct {
 	base.BaseController
-	OriginPrice []hangqing.OriginPrice
-	Result      map[string]interface{}
+	Result map[string]interface{}
 }
 
 func (self *FirstOriginPriceController) Init(c *gin.Context, productName, moduleName string) {
@@ -32,11 +33,28 @@ func (self *FirstOriginPriceController) action() {
 }
 
 func (self *FirstOriginPriceController) setData() {
-	self.Data["origin"] = self.OriginPrice
-	self.Data["redis"] = product.GetProductDetail(self.C, 8426)
+	self.Data["origin"] = self.getOrigin()
+
+	self.Data["product"] = self.getProduct()
+
+	self.Data["location"] = self.getLocation()
 }
 
-func (self *FirstOriginPriceController) getOrigin() {
+func (self *FirstOriginPriceController) getOrigin() []hangqing.OriginPrice {
 	originPriceModel := hangqing.NewOriginPriceModel()
-	self.OriginPrice = originPriceModel.GetFirst()
+	return originPriceModel.GetFirst()
+}
+
+func (self *FirstOriginPriceController) getProduct() map[string]interface{} {
+	servicesFactory := &services.ServicesFactory{}
+	productFactory := servicesFactory.GetInstance("Product")
+	productServices := productFactory["Product"].(*product.Product)
+	return productServices.GetProductDetail(self.C, 8426)
+}
+
+func (self *FirstOriginPriceController) getLocation() map[string]interface{} {
+	servicesFactory := &services.ServicesFactory{}
+	locationFactory := servicesFactory.GetInstance("Location")
+	locationServices := locationFactory["Location"].(*location.Location)
+	return locationServices.GetLocationDetail(self.C, 2)
 }

@@ -6,18 +6,25 @@ import (
 
 	"github.com/why444216978/go-library/libraries/config"
 	"github.com/why444216978/go-library/libraries/redis"
-	"github.com/why444216978/go-library/libraries/util"
+	"github.com/why444216978/go-library/libraries/util/conversion"
+	"github.com/why444216978/go-library/libraries/util/error"
 
 	redigo "github.com/gomodule/redigo/redis"
 )
 
+type Product struct{}
+
+func (product Product) Init() {}
+
+var product *Product
+
 const (
 	redisName        = "product"
-	productDetailKey = "hangqing_category::id_detail:"
+	productDetailKey = "product::id_detail:"
 	productNameKey   = "product::id_name:"
 )
 
-func getDb() *redis.RedisDB {
+func (product *Product) gerRedis() *redis.RedisDB {
 	fileCfg := config.GetConfig("redis", redisName)
 
 	hostCfg := fileCfg.Key("host").String()
@@ -28,32 +35,31 @@ func getDb() *redis.RedisDB {
 	maxIdleCfg, err := fileCfg.Key("max_idle").Int()
 	logCfg, err := fileCfg.Key("is_log").Bool()
 	execTime, err := fileCfg.Key("exec_timeout").Int64()
-	util.Must(err)
+	error.Must(err)
 
 	db, err := redis.Conn("product", hostCfg, passwordCfg, portCfg, dbCfg, maxActiveCfg, maxIdleCfg, logCfg, execTime)
-	util.Must(err)
+	error.Must(err)
 
 	return db
 }
 
-func GetProductDetail(ctx context.Context, id int) string {
-	db := getDb()
+func (product *Product) GetProductDetail(ctx context.Context, id int) map[string]interface{} {
+	db := product.gerRedis()
 
-	data, err := redigo.String(db.Do(ctx, "GET", productDetailKey+strconv.Itoa(id)))
-	util.Must(err)
-	return data
+	data, _ := redigo.String(db.Do(ctx, "GET", productDetailKey+strconv.Itoa(id)))
+
+	return conversion.JsonToMap(data)
 }
 
-func BatchProductDetail(ctx context.Context, ids []int) []string {
-	db := getDb()
+func (product *Product) BatchProductDetail(ctx context.Context, ids []int) []string {
+	db := product.gerRedis()
 
 	var args []interface{}
 	for _, v := range ids {
 		args = append(args, productDetailKey+strconv.Itoa(v))
 	}
 
-	data, err := redigo.Strings(db.Do(ctx, "MGET", args...))
-	util.Must(err)
+	data, _ := redigo.Strings(db.Do(ctx, "MGET", args...))
 
 	return data
 }

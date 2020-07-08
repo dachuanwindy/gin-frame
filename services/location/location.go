@@ -1,4 +1,4 @@
-package product
+package location
 
 import (
 	"context"
@@ -7,9 +7,16 @@ import (
 	"github.com/why444216978/go-library/libraries/config"
 	"github.com/why444216978/go-library/libraries/redis"
 	"github.com/why444216978/go-library/libraries/util"
+	"github.com/why444216978/go-library/libraries/util/conversion"
 
 	redigo "github.com/gomodule/redigo/redis"
 )
+
+type Location struct{}
+
+func (location Location) Init() {}
+
+var location *Location
 
 const (
 	redisName         = "location"
@@ -17,7 +24,7 @@ const (
 	locationNameKey   = "location::id_name:"
 )
 
-func getDb() *redis.RedisDB {
+func (location *Location) getRedis() *redis.RedisDB {
 	fileCfg := config.GetConfig("redis", redisName)
 
 	hostCfg := fileCfg.Key("host").String()
@@ -30,30 +37,28 @@ func getDb() *redis.RedisDB {
 	execTime, err := fileCfg.Key("exec_timeout").Int64()
 	util.Must(err)
 
-	db, err := redis.Conn("product", hostCfg, passwordCfg, portCfg, dbCfg, maxActiveCfg, maxIdleCfg, logCfg, execTime)
-	util.Must(err)
+	db, err := redis.Conn("location", hostCfg, passwordCfg, portCfg, dbCfg, maxActiveCfg, maxIdleCfg, logCfg, execTime)
 
 	return db
 }
 
-func GetLocationDetail(ctx context.Context, id int) string {
-	db := getDb()
+func (location *Location) GetLocationDetail(ctx context.Context, id int) map[string]interface{} {
+	db := location.getRedis()
 
-	data, err := redigo.String(db.Do(ctx, "GET", locationNameKey+strconv.Itoa(id)))
-	util.Must(err)
-	return data
+	data, _ := redigo.String(db.Do(ctx, "GET", locationDetailKey+strconv.Itoa(id)))
+
+	return conversion.JsonToMap(data)
 }
 
-func BatchLocationDetail(ctx context.Context, ids []int) []string {
-	db := getDb()
+func (location *Location) BatchLocationDetail(ctx context.Context, ids []int) []string {
+	db := location.getRedis()
 
 	var args []interface{}
 	for _, v := range ids {
 		args = append(args, locationDetailKey+strconv.Itoa(v))
 	}
 
-	data, err := redigo.Strings(db.Do(ctx, "MGET", args...))
-	util.Must(err)
+	data, _ := redigo.Strings(db.Do(ctx, "MGET", args...))
 
 	return data
 }

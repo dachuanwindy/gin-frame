@@ -280,6 +280,8 @@ github.com/ugorji/go/codec v1.1.7/go.mod h1:Ax+UKWsSmolVDwsd+7N3ZtXu+yMGCf907BLY
 github.com/wendal/errors v0.0.0-20130201093226-f66c77a7882b/go.mod h1:Q12BUT7DqIlHRmgv3RskH+UCM/4eqVMgI0EMmlSpAXc=
 github.com/why444216978/go-library v0.0.0-20200707063208-3a799797e664 h1:W8KzuodO2gtpPbumZRWCyZ7urYMWEAUlHU9C3/3Q/TM=
 github.com/why444216978/go-library v0.0.0-20200707063208-3a799797e664/go.mod h1:Dr2IrVLB7xRUk1IPwdnImN1xKhir2oYoFbgxh2iEm4E=
+github.com/why444216978/go-library v0.0.0-20200707073254-9f5fc0039a3e h1:hQolmsbsH6Az0sWzrS0fvuJj2MTPuy8veUoStxJ5q1U=
+github.com/why444216978/go-library v0.0.0-20200707083756-fe5dd13ddf61 h1:WRHHr8Ezgg1+ffh3TL/z8yxHYVe/ySSFmA91MgU2jAg=
 github.com/why444216978/http-agollo/agollo v0.0.0-20200707035532-9840f93fe73b/go.mod h1:xVS4mvooFNQQ9P8Ju5cZx9ip2pYMEZZ/TZObqDmCNNI=
 github.com/xiang90/probing v0.0.0-20190116061207-43a291ad63a2/go.mod h1:UETIi67q53MR2AWcXfiuqkDkRtnGDLqkBTpCHuJHxtU=
 github.com/yuin/goldmark v1.1.27/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9decYSb74=
