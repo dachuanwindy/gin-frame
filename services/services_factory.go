@@ -5,9 +5,6 @@ import (
 	"gin-frame/services/product"
 )
 
-type Services interface {
-	Init()
-}
 type ServicesFactory struct{}
 
 func (factory *ServicesFactory) GetInstance(name string) map[string]interface{} {
