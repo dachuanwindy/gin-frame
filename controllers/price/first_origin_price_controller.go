@@ -2,17 +2,16 @@ package price
 
 import (
 	"gin-frame/controllers/base"
-	"gin-frame/models/hangqing"
-	"gin-frame/services"
-	"gin-frame/services/location"
-	"gin-frame/services/product"
+	"gin-frame/service"
+	"gin-frame/service/origin_price_service"
 
 	"github.com/gin-gonic/gin"
 )
 
 type FirstOriginPriceController struct {
 	base.BaseController
-	Result map[string]interface{}
+	OriginPriceService *origin_price_service.OriginPriceService
+	Result             map[string]interface{}
 }
 
 func (self *FirstOriginPriceController) Init(c *gin.Context, productName, moduleName string) {
@@ -23,38 +22,43 @@ func (self *FirstOriginPriceController) Init(c *gin.Context, productName, module
 }
 
 func (self *FirstOriginPriceController) Do() {
+	self.load()
 	self.action()
 	self.setData()
 	self.ResultJson()
 }
 
+func (self *FirstOriginPriceController) load() {
+	serviceFactory := &service.ServiceFactory{}
+	originPriceFactory := serviceFactory.GetInstance("OriginPriceService")
+	self.OriginPriceService = originPriceFactory["OriginPriceService"].(*origin_price_service.OriginPriceService)
+}
+
 func (self *FirstOriginPriceController) action() {
-	self.getOrigin()
+	origin := self.OriginPriceService.GetFirstRow(true)
+	self.Data["origin"] = origin
+
+	productId := 0
+	locationId := 0
+
+	if origin != nil {
+		if origin["product_id"] != nil {
+			productId = origin["product_id"].(int)
+			if origin["breed_id"] != nil {
+				productId = origin["breed_id"].(int)
+			}
+		}
+
+		if origin["location_id"] != nil {
+			locationId = origin["location_id"].(int)
+		}
+	}
+
+	self.Data["product"] = self.OriginPriceService.GetOriginPriceProduct(self.C, productId)
+
+	self.Data["location"] = self.OriginPriceService.GetOriginPriceLocation(self.C, locationId)
 }
 
 func (self *FirstOriginPriceController) setData() {
-	self.Data["origin"] = self.getOrigin()
 
-	self.Data["product"] = self.getProduct()
-
-	self.Data["location"] = self.getLocation()
-}
-
-func (self *FirstOriginPriceController) getOrigin() []hangqing.OriginPrice {
-	originPriceModel := hangqing.NewOriginPriceModel()
-	return originPriceModel.GetFirst()
-}
-
-func (self *FirstOriginPriceController) getProduct() map[string]interface{} {
-	servicesFactory := &services.ServicesFactory{}
-	productFactory := servicesFactory.GetInstance("Product")
-	productServices := productFactory["Product"].(*product.Product)
-	return productServices.GetProductDetail(self.C, 8426)
-}
-
-func (self *FirstOriginPriceController) getLocation() map[string]interface{} {
-	servicesFactory := &services.ServicesFactory{}
-	locationFactory := servicesFactory.GetInstance("Location")
-	locationServices := locationFactory["Location"].(*location.Location)
-	return locationServices.GetLocationDetail(self.C, 2)
 }

@@ -2,7 +2,9 @@ package location
 
 import (
 	"context"
+	"log"
 	"strconv"
+	"sync"
 
 	"github.com/why444216978/go-library/libraries/config"
 	"github.com/why444216978/go-library/libraries/redis"
@@ -12,11 +14,12 @@ import (
 	redigo "github.com/gomodule/redigo/redis"
 )
 
-type Location struct{}
+type LocationLibrary struct {
+	redis *redis.RedisDB
+}
 
-func (location Location) Init() {}
-
-var location *Location
+var location *LocationLibrary
+var onceLibraryLocation sync.Once
 
 const (
 	redisName         = "location"
@@ -24,7 +27,18 @@ const (
 	locationNameKey   = "location::id_name:"
 )
 
-func (location *Location) getRedis() *redis.RedisDB {
+func NewObj() *LocationLibrary {
+	onceLibraryLocation.Do(func() {
+		location = &LocationLibrary{}
+
+		location.redis = location.getRedis()
+
+		log.Printf("new library location")
+	})
+	return location
+}
+
+func (location *LocationLibrary) getRedis() *redis.RedisDB {
 	fileCfg := config.GetConfig("redis", redisName)
 
 	hostCfg := fileCfg.Key("host").String()
@@ -42,7 +56,7 @@ func (location *Location) getRedis() *redis.RedisDB {
 	return db
 }
 
-func (location *Location) GetLocationDetail(ctx context.Context, id int) map[string]interface{} {
+func (location *LocationLibrary) GetLocationDetail(ctx context.Context, id int) map[string]interface{} {
 	db := location.getRedis()
 
 	data, _ := redigo.String(db.Do(ctx, "GET", locationDetailKey+strconv.Itoa(id)))
@@ -50,7 +64,7 @@ func (location *Location) GetLocationDetail(ctx context.Context, id int) map[str
 	return conversion.JsonToMap(data)
 }
 
-func (location *Location) BatchLocationDetail(ctx context.Context, ids []int) []string {
+func (location *LocationLibrary) BatchLocationDetail(ctx context.Context, ids []int) []string {
 	db := location.getRedis()
 
 	var args []interface{}

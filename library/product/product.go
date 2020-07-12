@@ -2,7 +2,9 @@ package product
 
 import (
 	"context"
+	"log"
 	"strconv"
+	"sync"
 
 	"github.com/why444216978/go-library/libraries/config"
 	"github.com/why444216978/go-library/libraries/redis"
@@ -12,11 +14,12 @@ import (
 	redigo "github.com/gomodule/redigo/redis"
 )
 
-type Product struct{}
+type ProductLibrary struct {
+	redis *redis.RedisDB
+}
 
-func (product Product) Init() {}
-
-var product *Product
+var product *ProductLibrary
+var onceLibraryProduct sync.Once
 
 const (
 	redisName        = "product"
@@ -24,7 +27,18 @@ const (
 	productNameKey   = "product::id_name:"
 )
 
-func (product *Product) gerRedis() *redis.RedisDB {
+func NewObj() *ProductLibrary {
+	onceLibraryProduct.Do(func() {
+		product = &ProductLibrary{}
+
+		product.redis = product.getRedis()
+
+		log.Printf("new library product")
+	})
+	return product
+}
+
+func (product *ProductLibrary) getRedis() *redis.RedisDB {
 	fileCfg := config.GetConfig("redis", redisName)
 
 	hostCfg := fileCfg.Key("host").String()
@@ -43,23 +57,19 @@ func (product *Product) gerRedis() *redis.RedisDB {
 	return db
 }
 
-func (product *Product) GetProductDetail(ctx context.Context, id int) map[string]interface{} {
-	db := product.gerRedis()
-
-	data, _ := redigo.String(db.Do(ctx, "GET", productDetailKey+strconv.Itoa(id)))
+func (self *ProductLibrary) GetProductDetail(ctx context.Context, id int) map[string]interface{} {
+	data, _ := redigo.String(self.redis.Do(ctx, "GET", productDetailKey+strconv.Itoa(id)))
 
 	return conversion.JsonToMap(data)
 }
 
-func (product *Product) BatchProductDetail(ctx context.Context, ids []int) []string {
-	db := product.gerRedis()
-
+func (self *ProductLibrary) BatchProductDetail(ctx context.Context, ids []int) []string {
 	var args []interface{}
 	for _, v := range ids {
 		args = append(args, productDetailKey+strconv.Itoa(v))
 	}
 
-	data, _ := redigo.Strings(db.Do(ctx, "MGET", args...))
+	data, _ := redigo.Strings(self.redis.Do(ctx, "MGET", args...))
 
 	return data
 }
