@@ -4,6 +4,7 @@ import (
 	"gin-frame/controllers/base"
 	"gin-frame/service"
 	"gin-frame/service/origin_price_service"
+	"sync"
 
 	"github.com/gin-gonic/gin"
 )
@@ -54,9 +55,18 @@ func (self *FirstOriginPriceController) action() {
 		}
 	}
 
-	self.Data["product"] = self.OriginPriceService.GetOriginPriceProduct(self.C, productId)
+	var wg sync.WaitGroup
+	wg.Add(2)
+	go func() {
+		defer wg.Done()
+		self.Data["product"] = self.OriginPriceService.GetOriginPriceProduct(self.C, productId)
+	}()
 
-	self.Data["location"] = self.OriginPriceService.GetOriginPriceLocation(self.C, locationId)
+	go func() {
+		defer wg.Done()
+		self.Data["location"] = self.OriginPriceService.GetOriginPriceLocation(self.C, locationId)
+	}()
+	wg.Wait()
 }
 
 func (self *FirstOriginPriceController) setData() {
