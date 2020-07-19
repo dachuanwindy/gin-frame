@@ -3,7 +3,6 @@ module gin-frame
 go 1.13
 
 require (
-	git.ymt360.com/zhuayu-commons/apollo-sdk-go v0.0.3
 	github.com/OwnLocal/goes v1.0.0 // indirect
 	github.com/acroca/go-symbols v0.1.1 // indirect
 	github.com/astaxie/beego v1.12.2
